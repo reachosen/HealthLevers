@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>USNWR v4 UI Mock – Six Cases</title>
+  <style>
+    body {
+      background-color: #0a0d23;
+      color: #f1f1f1;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 1.2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+      grid-gap: 20px;
+    }
+    .card {
+      background-color: #121730;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+      padding: 16px 20px 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .metric-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .status {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .status.pass {
+      background-color: #28a745;
+      color: #fff;
+    }
+    .status.fail {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    .status.caution {
+      background-color: #ffc107;
+      color: #212529;
+    }
+    .patient {
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+    .timeline-wrapper {
+      margin-bottom: 12px;
+    }
+    .timeline-bar {
+      height: 6px;
+      width: 100%;
+      background-color: #2e3a5e;
+      border-radius: 4px;
+      position: relative;
+    }
+    .timeline-bar .progress {
+      height: 100%;
+      border-radius: 4px;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .primary-fields, .secondary-fields {
+      margin-bottom: 10px;
+    }
+    .primary-fields h4, .secondary-fields h4 {
+      margin: 6px 0 4px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #cdd4e0;
+    }
+    .field-item {
+      font-size: 0.85rem;
+      margin-left: 10px;
+      margin-bottom: 2px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .chip {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #fff;
+    }
+    /* Chip colors by group */
+    .chip.core { background-color: #007acc; }
+    .chip.delays { background-color: #e0a800; color:#212529; }
+    .chip.complications { background-color: #d9534f; }
+    .chip.documentation { background-color: #6c757d; }
+    .chip.exclusions { background-color: #28a745; }
+    .chip.overrides { background-color: #17a2b8; }
+  </style>
+</head>
+<body>
+  <h1>USNWR v4 UI Mock – Six Example Cases</h1>
+  <div class="grid">
+    <!-- Card 1: Ortho I25 – pass (rule-in borderline pass) -->
+    <div class="card">
+      <div class="card-header">
+        <p class="metric-title">Ortho • I25 — In OR &lt;19h (Supracondylar)</p>
+        <span class="status pass">Pass</span>
+      </div>
+      <div class="patient">ID: ORTHO-I25-001 • Age: 6 F • Weight: 22.5 kg</div>
+      <div class="timeline-wrapper">
+        <div class="timeline-bar">
+          <div class="progress" style="width: 99%; background-color: #28a745;"></div>
+        </div>
+      </div>
+      <div class="primary-fields">
+        <h4>Primary (Core)</h4>
+        <div class="field-item">arrival: 2025-08-02 13:40</div>
+        <div class="field-item">incision start: 2025-08-03 08:45</div>
+        <div class="field-item">consult ortho: 2025-08-02 15:00</div>
+      </div>
+      <div class="secondary-fields">
+        <h4>Secondary</h4>
+        <div class="field-item">CT order: 2025-08-02 16:10</div>
+        <div class="field-item">CT complete: 2025-08-02 16:45</div>
+        <div class="field-item">consent: 2025-08-02 17:40</div>
+      </div>
+      <div class="chips">
+        <span class="chip delays">Interpreter delay</span>
+        <span class="chip delays">CT justified</span>
+        <span class="chip documentation">Incision time conflict</span>
+      </div>
+    </div>
+
+    <!-- Card 2: Ortho I25 – fail (rule-out/true fail) -->
+    <div class="card">
+      <div class="card-header">
+        <p class="metric-title">Ortho • I25 — In OR &lt;19h (Supracondylar)</p>
+        <span class="status fail">Fail</span>
+      </div>
+      <div class="patient">ID: ORTHO-I25-002 • Age: 7 M • Weight: 24.8 kg</div>
+      <div class="timeline-wrapper">
+        <div class="timeline-bar">
+          <div class="progress" style="width: 107%; background-color: #dc3545;"></div>
+        </div>
+      </div>
+      <div class="primary-fields">
+        <h4>Primary (Core)</h4>
+        <div class="field-item">arrival: 2025-08-05 12:05</div>
+        <div class="field-item">incision start: 2025-08-06 08:35</div>
+        <div class="field-item">consult ortho: 2025-08-05 14:10</div>
+      </div>
+      <div class="secondary-fields">
+        <h4>Secondary</h4>
+        <div class="field-item">CT order: 2025-08-05 14:35</div>
+        <div class="field-item">MRI order: 2025-08-05 15:10</div>
+        <div class="field-item">consent: 2025-08-05 17:15</div>
+      </div>
+      <div class="chips">
+        <span class="chip delays">OR backlog</span>
+        <span class="chip delays">Non-ortho admit</span>
+        <span class="chip delays">Extra CT/MRI</span>
+        <span class="chip delays">NPO violation</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Neuro H17AH17E – fail (readmit within 30d) -->
+    <div class="card">
+      <div class="card-header">
+        <p class="metric-title">Neuro • H17AH17E — 30‑day readmission</p>
+        <span class="status fail">Fail</span>
+      </div>
+      <div class="patient">ID: NEURO-H17-017 • Age: 54 M • Weight: 76.3 kg</div>
+      <div class="timeline-wrapper">
+        <div class="timeline-bar">
+          <div class="progress" style="width: 90%; background-color: #dc3545;"></div>
+        </div>
+      </div>
+      <div class="primary-fields">
+        <h4>Primary (Core)</h4>
+        <div class="field-item">index surgery: 2025-05-18</div>
+        <div class="field-item">discharge: 2025-05-22</div>
+        <div class="field-item">readmission: 2025-06-14</div>
+      </div>
+      <div class="secondary-fields">
+        <h4>Secondary</h4>
+        <div class="field-item">cause of readmission: Epidural abscess</div>
+        <div class="field-item">follow-up scheduled: 2025-09-01 (cancelled)</div>
+        <div class="field-item">planned procedure: Stage‑2 reconstruction</div>
+      </div>
+      <div class="chips">
+        <span class="chip complications">Infection (abscess)</span>
+        <span class="chip documentation">Culture: Staph aureus</span>
+        <span class="chip exclusions">Elective procedure cancelled</span>
+      </div>
+    </div>
+
+    <!-- Card 4: Neuro H17AH17E – pass (no readmission in 30d) -->
+    <div class="card">
+      <div class="card-header">
+        <p class="metric-title">Neuro • H17AH17E — 30‑day readmission</p>
+        <span class="status pass">Pass</span>
+      </div>
+      <div class="patient">ID: NEURO-H17-018 • Age: 50 F • Weight: 68.0 kg</div>
+      <div class="timeline-wrapper">
+        <div class="timeline-bar">
+          <div class="progress" style="width: 0%; background-color: #28a745;"></div>
+        </div>
+      </div>
+      <div class="primary-fields">
+        <h4>Primary (Core)</h4>
+        <div class="field-item">index surgery: 2025-06-03</div>
+        <div class="field-item">discharge: 2025-06-06</div>
+        <div class="field-item">readmission: None within 30 days</div>
+      </div>
+      <div class="secondary-fields">
+        <h4>Secondary</h4>
+        <div class="field-item">planned procedure: Stage‑2 reconstruction (scheduled)</div>
+        <div class="field-item">follow-up scheduled: 2025-06-20</div>
+        <div class="field-item">cause of readmission: —</div>
+      </div>
+      <div class="chips">
+        <span class="chip exclusions">Scheduled stage‑2 procedure</span>
+        <span class="chip delays">Clinic follow-up on time</span>
+      </div>
+    </div>
+
+    <!-- Card 5: Cardio E24 – pass (alive at 3y) -->
+    <div class="card">
+      <div class="card-header">
+        <p class="metric-title">Cardio • E24 — 3‑year transplant survival</p>
+        <span class="status pass">Pass</span>
+      </div>
+      <div class="patient">ID: CARDIO-E24-024 • Age: 17 F • Weight: 55.0 kg</div>
+      <div class="timeline-wrapper">
+        <div class="timeline-bar">
+          <div class="progress" style="width: 100%; background-color: #28a745;"></div>
+        </div>
+      </div>
+      <div class="primary-fields">
+        <h4>Primary (Core)</h4>
+        <div class="field-item">transplant date: 2022-03-10</div>
+        <div class="field-item">year‑3 follow-up: 2025-03-16</div>
+        <div class="field-item">outcome status: Alive</div>
+      </div>
+      <div class="secondary-fields">
+        <h4>Secondary</h4>
+        <div class="field-item">year‑1 follow-up: 2023-03-12</div>
+        <div class="field-item">year‑2 follow-up: 2024-03-14</div>
+        <div class="field-item">last seen: 2025-08-25</div>
+      </div>
+      <div class="chips">
+        <span class="chip complications">Rejection episode (2R on 2023‑09‑05)</span>
+        <span class="chip complications">Rejection episode (1R on 2024‑11‑22)</span>
+        <span class="chip documentation">External death record false match</span>
+      </div>
+    </div>
+
+    <!-- Card 6: Cardio E24 – fail (death before 3y) -->
+    <div class="card">
+      <div class="card-header">
+        <p class="metric-title">Cardio • E24 — 3‑year transplant survival</p>
+        <span class="status fail">Fail</span>
+      </div>
+      <div class="patient">ID: CARDIO-E24-025 • Age: 15 M • Weight: 52.0 kg</div>
+      <div class="timeline-wrapper">
+        <div class="timeline-bar">
+          <div class="progress" style="width: 87%; background-color: #dc3545;"></div>
+        </div>
+      </div>
+      <div class="primary-fields">
+        <h4>Primary (Core)</h4>
+        <div class="field-item">transplant date: 2022-04-01</div>
+        <div class="field-item">last follow-up: 2024-12-15</div>
+        <div class="field-item">outcome status: Deceased (2.6 years)</div>
+      </div>
+      <div class="secondary-fields">
+        <h4>Secondary</h4>
+        <div class="field-item">year‑1 follow-up: 2023-04-05</div>
+        <div class="field-item">year‑2 follow-up: 2024-04-03</div>
+        <div class="field-item">rejection history: 1R on 2023‑08‑18</div>
+      </div>
+      <div class="chips">
+        <span class="chip complications">Acute rejection treated with steroids</span>
+        <span class="chip documentation">No chronic rejection noted</span>
+        <span class="chip overrides">Clinician override pending</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
