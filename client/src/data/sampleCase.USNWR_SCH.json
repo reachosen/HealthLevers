@@ -1,0 +1,59 @@
+{
+  "id": "E12345",
+  "patient": { "mrn": "00112233", "name": "J. Doe", "age": 7 },
+  "encounter": { "id": "E12345", "location": "ED", "disposition": "Admit" },
+  "events": {
+    "arrival": "2025-08-15T10:40:00Z",
+    "consult": { "ortho": "2025-08-15T12:10:00Z" },
+    "imaging": { "first": "2025-08-15T11:05:00Z" },
+    "surgery": { "start": "2025-08-16T02:05:00Z", "end": "2025-08-16T03:05:00Z" }
+  },
+  "consults": { "ortho": { "provider": "Smith, MD" } },
+  "imaging": {
+    "ct": { "performed": true, "time": "2025-08-15T11:12:00Z" },
+    "xray": { "time": "2025-08-15T11:05:00Z" }
+  },
+  "surgery": { "procedure": "CRPP SCH", "room": "OR-4", "priority": "Urgent", "delay_reason_code": "NPO" },
+  "anesthesia": { "start": "2025-08-16T01:45:00Z", "end": "2025-08-16T03:10:00Z", "npo_start": "2025-08-15T18:00:00Z" },
+  "clinical": { "neurovascular_compromise": false, "open_fracture": false },
+  "derived": {
+    "arrival_to_surgery_min": 920,
+    "target_19h_met": false,
+    "target_hours": 19,
+    "hours_to_surgery": 15.3
+  },
+  "flags": {
+    "npo_violation": true,
+    "system_delay": true,
+    "workup_delay": false,
+    "competing_priority": false,
+    "non_ortho_admit": false,
+    "medical_delay": false,
+    "sch_confirmed": true,
+    "dx_miscoded": false,
+    "non_op_or_elective": false
+  },
+  "outcomes": {
+    "readmit_7d": false,
+    "readmit_30d": false,
+    "readmit_related": false,
+    "return_or_30d": false,
+    "return_or_planned": false,
+    "ssi_signal": false,
+    "ssi_deep_cue": false,
+    "function_signal": false,
+    "implant_signal": false,
+    "vte_signal": false,
+    "vte_prophylaxis_given": true,
+    "compartment_signal": false,
+    "mortality_30d": false
+  },
+  "notes": {
+    "delay_summary": "NPO timing + after-hours OR availability.",
+    "key_quotes": [
+      "Resident note 8/15 20:20: patient had juice at 17:30; NPO restart 18:00.",
+      "OR note 8/16 01:20: limited room availability; staffed at 02:00."
+    ],
+    "exceptions_evidence": "NPO violation documented; after-hours OR staffing limitations"
+  }
+}

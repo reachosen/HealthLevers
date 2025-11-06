@@ -1,0 +1,683 @@
+[
+  {
+    "id": "TC_SCH_19H_FAIL",
+    "label": "SCH failure: 19.1h (FAIL)",
+    "module": "timeliness_sch",
+    "bucket": "needs_review", 
+    "status": "fail",
+    "description": "SCH case failing 19h target by 6 minutes",
+    "patientData": {
+      "times": {
+        "ArrivalInstant": "2025-02-04T00:00:00Z",
+        "IncisionStartInstant": "2025-02-04T19:06:00Z"
+        }
+      },
+      "expectedSignals": [
+        {
+          "check": "On-time \u226419h",
+          "status": "fail",
+          "evidence": "19.1h > 19h"
+        }
+      ],
+      "categoriesTriggered": ["Timeliness"],
+      "signalCount": 1
+    },
+    {
+      "id": "TC_SCH_MISSING_INcision",
+      "label": "SCH missing incision (CAUTION)",
+      "module": "timeliness_sch",
+      "bucket": "needs_review",
+      "status": "caution",
+      "description": "No incision time provided \u2192 caution workflow",
+      "patientData": {
+        "times": {
+          "ArrivalInstant": "2025-02-05T10:00:00Z"
+        }
+      },
+      "expectedSignals": [
+        {
+          "check": "On-time \u226419h",
+          "status": "caution",
+          "evidence": "Missing IncisionStartInstant"
+        }
+      ],
+      "categoriesTriggered": ["Timeliness"],
+      "signalCount": 1
+    },
+    {
+      "id": "TC_OPEN_FX_ANTIBIOTICS_LATE",
+      "label": "Open fx\u2014antibiotics late; debridement >24h",
+      "module": "timeliness_other",
+      "bucket": "needs_review",
+      "status": "fail",
+      "description": "Open fracture with delayed abx and debridement beyond 24h",
+      "patientData": {
+        "times": {
+          "ArrivalInstant": "2025-04-05T14:00:00Z",
+          "AbxFirstDose": "2025-04-05T16:40:00Z",
+          "DebridementStart": "2025-04-06T20:10:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-04-05T14:15:00Z",
+            "source": "ED",
+            "text": "Open tibia fracture Gustilo III; awaiting vascular consult."
+          },
+          {
+            "ts": "2025-04-06T18:00:00Z",
+            "source": "OR",
+            "text": "Vascular team cleared; proceeding to OR."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Debridement \u226424h",
+          "status": "fail",
+          "evidence": "30.2h (Arrival\u2192Debridement)"
+        },
+        {
+          "check": "Gustilo class",
+          "status": "pass",
+          "evidence": "Class III documented"
+        },
+        {
+          "check": "Delay reason",
+          "status": "pass",
+          "evidence": "Vascular consult delay"
+        },
+        {
+          "check": "Urgent abx \u226490m",
+          "status": "fail",
+          "evidence": "160 min to first dose"
+        }
+      ],
+      "categoriesTriggered": [
+        "Timeliness",
+        "Procedure Context",
+        "Workflow/Delays"
+      ],
+      "signalCount": 4
+    },
+    {
+      "id": "TC_SEPTIC_HIP_TARGET_MET",
+      "label": "Septic hip\u2014target met",
+      "module": "timeliness_other",
+      "bucket": "always_reviewed",
+      "status": "pass",
+      "description": "Septic hip meeting emergency timing targets",
+      "patientData": {
+        "times": {
+          "ArrivalInstant": "2025-03-10T02:30:00Z",
+          "IncisionStartInstant": "2025-03-10T08:15:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-03-10T03:00:00Z",
+            "source": "ED",
+            "text": "Febrile, irritable; hip effusion on US."
+          },
+          {
+            "ts": "2025-03-10T04:30:00Z",
+            "source": "Ortho",
+            "text": "Septic arthritis suspected; NPO maintained."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "On-time \u226412h",
+          "status": "pass",
+          "evidence": "5.75h (ADT\u2192OR)"
+        },
+        {
+          "check": "Correct Dx (septic hip)",
+          "status": "pass",
+          "evidence": "Clinical diagnosis documented"
+        }
+      ],
+      "categoriesTriggered": ["Timeliness", "Diagnosis"],
+      "signalCount": 2
+    },
+    {
+      "id": "TC_SSI_POSITIVE_DEEP",
+      "label": "SSI deep\u2014op debridement",
+      "module": "ssi",
+      "bucket": "needs_review",
+      "status": "infection_confirmed",
+      "description": "Deep SSI requiring operative intervention",
+      "patientData": {
+        "times": {
+          "IndexIncisionStart": "2025-05-01T09:00:00Z",
+          "CultureInstant": "2025-05-22T14:30:00Z",
+          "AbxStartInstant": "2025-05-22T15:00:00Z",
+          "ReturnORInstant": "2025-05-25T09:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-05-20T10:00:00Z",
+            "source": "Clinic",
+            "text": "Drainage and erythema at pin sites."
+          },
+          {
+            "ts": "2025-05-25T09:00:00Z",
+            "source": "OR",
+            "text": "Return to OR for washout; purulence noted."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Signs present",
+          "status": "pass",
+          "evidence": "Erythema/drainage"
+        },
+        {
+          "check": "Positive culture",
+          "status": "pass",
+          "evidence": "S. aureus (+)"
+        },
+        {
+          "check": "New postop antibiotics",
+          "status": "pass",
+          "evidence": "Started after culture"
+        },
+        {
+          "check": "Deep/organ-space cue",
+          "status": "pass",
+          "evidence": "Intra-op purulence / return to OR"
+        }
+      ],
+      "categoriesTriggered": ["Infection"],
+      "signalCount": 4
+    },
+    {
+      "id": "TC_SSI_RULEOUT",
+      "label": "Ruleout\u2014antibiotics no criteria",
+      "module": "ssi",
+      "bucket": "always_reviewed",
+      "status": "ruled_out",
+      "description": "SSI rule-out with antibiotics but no infection criteria",
+      "patientData": {
+        "times": {
+          "IndexIncisionStart": "2025-06-10T09:00:00Z",
+          "CultureInstant": "2025-06-18T09:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-06-15T11:00:00Z",
+            "source": "Clinic",
+            "text": "Pin sites clean, no drainage. Prophylactic antibiotics for reassurance."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Signs present",
+          "status": "fail",
+          "evidence": "No signs of infection"
+        },
+        {
+          "check": "Positive culture",
+          "status": "fail",
+          "evidence": "Culture negative"
+        },
+        {
+          "check": "New postop antibiotics",
+          "status": "pass",
+          "evidence": "Prophylactic antibiotics documented"
+        }
+      ],
+      "categoriesTriggered": ["Infection"],
+      "signalCount": 3
+    },
+    {
+      "id": "TC_RTO_UNPLANNED",
+      "label": "Return to OR - Unplanned",
+      "module": "rto",
+      "bucket": "needs_review",
+      "status": "unplanned_return",
+      "description": "Unplanned return to OR for hardware failure",
+      "patientData": {
+        "times": {
+          "IndexIncisionStart": "2025-07-01T09:00:00Z",
+          "DischargeInstant": "2025-07-02T15:00:00Z",
+          "ReturnORIncision": "2025-07-15T09:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-07-10T14:00:00Z",
+            "source": "Clinic",
+            "text": "X-ray shows pin migration since last visit."
+          },
+          {
+            "ts": "2025-07-15T09:00:00Z",
+            "source": "OR",
+            "text": "Revision fixation due to loss of reduction (unplanned)."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Return within 30d",
+          "status": "pass",
+          "evidence": "13 days from discharge"
+        },
+        {
+          "check": "Planned/staged?",
+          "status": "fail",
+          "evidence": "No planned/staged cue"
+        },
+        {
+          "check": "Unplanned related",
+          "status": "pass",
+          "evidence": "Loss of fixation related to index surgery"
+        }
+      ],
+      "categoriesTriggered": ["Return to OR"],
+      "signalCount": 3
+    },
+    {
+      "id": "TC_RTO_PLANNED_WITHIN_30D",
+      "label": "Return to OR - Planned (negative control)",
+      "module": "rto",
+      "bucket": "always_reviewed",
+      "status": "planned_return",
+      "description": "Planned/staged return to OR within 30 days (should not flag as unplanned)",
+      "patientData": {
+        "times": {
+          "IndexIncisionStart": "2025-07-01T09:00:00Z",
+          "DischargeInstant": "2025-07-02T15:00:00Z",
+          "ReturnORIncision": "2025-07-20T09:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-07-02T12:00:00Z",
+            "source": "Ortho",
+            "text": "Planned staged return for hardware removal documented."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Return within 30d",
+          "status": "pass",
+          "evidence": "18 days from discharge"
+        },
+        {
+          "check": "Planned/staged?",
+          "status": "pass",
+          "evidence": "Explicit staged plan documented"
+        },
+        {
+          "check": "Unplanned related",
+          "status": "fail",
+          "evidence": "Planned return \u2014 do not count"
+        }
+      ],
+      "categoriesTriggered": ["Return to OR"],
+      "signalCount": 3
+    },
+    {
+      "id": "TC_READMIT_RELATED",
+      "label": "Related readmission",
+      "module": "readmit",
+      "bucket": "needs_review",
+      "status": "unplanned_readmit",
+      "description": "Unscheduled readmission related to index procedure",
+      "patientData": {
+        "times": {
+          "DischargeInstant": "2025-08-01T12:00:00Z",
+          "ReadmitAdmitInstant": "2025-08-06T22:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-08-06T22:10:00Z",
+            "source": "ED",
+            "text": "Fever and increased pain at surgical site."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Readmit 7d/30d",
+          "status": "pass",
+          "evidence": "Day 5 readmit"
+        },
+        {
+          "check": "Related cue",
+          "status": "pass",
+          "evidence": "Pain/fever post-op"
+        },
+        {
+          "check": "Scheduled follow-up?",
+          "status": "fail",
+          "evidence": "Not scheduled FU"
+        }
+      ],
+      "categoriesTriggered": ["Readmission"],
+      "signalCount": 3
+    },
+    {
+      "id": "TC_READMIT_SCHEDULED_FU",
+      "label": "Scheduled follow-up (negative control)",
+      "module": "readmit",
+      "bucket": "always_reviewed",
+      "status": "scheduled_followup",
+      "description": "Scheduled suture removal within 30 days \u2014 should not count as adverse readmit",
+      "patientData": {
+        "times": {
+          "DischargeInstant": "2025-08-01T12:00:00Z",
+          "ReadmitAdmitInstant": "2025-08-20T09:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-08-20T09:05:00Z",
+            "source": "Clinic",
+            "text": "Scheduled follow-up visit for suture removal."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Readmit 7d/30d",
+          "status": "pass",
+          "evidence": "Day 19 (scheduled)"
+        },
+        {
+          "check": "Scheduled follow-up?",
+          "status": "pass",
+          "evidence": "Explicit scheduled FU note"
+        },
+        {
+          "check": "Related cue",
+          "status": "fail",
+          "evidence": "No complication cues"
+        }
+      ],
+      "categoriesTriggered": ["Readmission"],
+      "signalCount": 3
+    },
+    {
+      "id": "TC_NV_DEFICIT",
+      "label": "Neurovascular deficit",
+      "module": "neurovascular",
+      "bucket": "needs_review",
+      "status": "new_deficit",
+      "description": "New neurovascular deficit post-operatively",
+      "patientData": {
+        "times": {
+          "ArrivalInstant": "2025-08-10T12:00:00Z",
+          "IncisionStartInstant": "2025-08-10T18:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-08-10T16:00:00Z",
+            "source": "Pre-op",
+            "text": "NV exam normal (cap refill <2s, intact motor/sensory)."
+          },
+          {
+            "ts": "2025-08-11T08:00:00Z",
+            "source": "Post-op",
+            "text": "Decreased grip strength; paresthesias ulnar distribution."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Pre normal?",
+          "status": "pass",
+          "evidence": "Pre-op NV normal"
+        },
+        {
+          "check": "Post abnormal?",
+          "status": "pass",
+          "evidence": "Post-op deficit documented"
+        }
+      ],
+      "categoriesTriggered": ["Neurovascular"],
+      "signalCount": 2
+    },
+    {
+      "id": "TC_FUNCTION_POOR",
+      "label": "Poor functional outcome",
+      "module": "function",
+      "bucket": "needs_review",
+      "status": "functional_failure",
+      "description": "Limited ROM and functional outcome at 90 days",
+      "patientData": {
+        "times": {
+          "IndexIncisionStart": "2025-05-15T09:00:00Z",
+          "FU90D_Clinic": "2025-08-15T10:00:00Z"
+        },
+        "flowsheets": [
+          {
+            "ts": "2025-08-15T10:00:00Z",
+            "name": "Elbow ROM Flexion",
+            "numeric": 80
+          }
+        ],
+        "notes": [
+          {
+            "ts": "2025-08-15T10:30:00Z",
+            "source": "Ortho",
+            "text": "X-ray: malunion; not cleared for sports."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Numeric ROM",
+          "status": "fail",
+          "evidence": "Flexion 80\u00b0 (<120\u00b0)"
+        },
+        {
+          "check": "Cleared for sports",
+          "status": "fail",
+          "evidence": "Not cleared"
+        },
+        {
+          "check": "Mal/nonunion imaging",
+          "status": "pass",
+          "evidence": "Malunion on XR"
+        }
+      ],
+      "categoriesTriggered": ["Function"],
+      "signalCount": 3
+    },
+    {
+      "id": "TC_IMPLANT_ISSUE",
+      "label": "Implant issue (XR + CPT removal)",
+      "module": "implant",
+      "bucket": "needs_review",
+      "status": "hardware_issue",
+      "description": "Hardware breakage on imaging with CPT 20680 removal",
+      "patientData": {
+        "times": {
+          "ImagingInstant": "2025-08-05T09:00:00Z",
+          "CPTInstant": "2025-08-07T13:00:00Z"
+        },
+        "imaging": [
+          {
+            "ts": "2025-08-05T09:00:00Z",
+            "impression": "Hardware breakage with migration."
+          }
+        ],
+        "cpt": [
+          {
+            "ts": "2025-08-07T13:00:00Z",
+            "code": "20680",
+            "text": "Removal of implant"
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Imaging cue",
+          "status": "pass",
+          "evidence": "Breakage/migration in impression"
+        },
+        {
+          "check": "Revision/removal CPT",
+          "status": "pass",
+          "evidence": "20680 removal documented"
+        }
+      ],
+      "categoriesTriggered": ["Implant/Hardware"],
+      "signalCount": 2
+    },
+    {
+      "id": "TC_VTE_NO_PROPH",
+      "label": "VTE without prophylaxis",
+      "module": "vte",
+      "bucket": "needs_review",
+      "status": "vte_event",
+      "description": "VTE event without adequate prophylaxis",
+      "patientData": {
+        "times": {
+          "IndexAdmissionStart": "2025-07-30T10:00:00Z",
+          "IndexAdmissionEnd": "2025-08-02T12:00:00Z",
+          "VTEImagingInstant": "2025-08-12T16:00:00Z"
+        },
+        "mar": [],
+        "notes": [
+          {
+            "ts": "2025-08-12T16:00:00Z",
+            "source": "Radiology",
+            "text": "Ultrasound confirms DVT in left lower extremity."
+          },
+          {
+            "ts": "2025-08-12T17:00:00Z",
+            "source": "Review",
+            "text": "No anticoagulation documented during index admission."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "VTE dx/imaging",
+          "status": "pass",
+          "evidence": "DVT confirmed on US"
+        },
+        {
+          "check": "Prophylaxis given?",
+          "status": "fail",
+          "evidence": "No MAR anticoagulation in index window"
+        }
+      ],
+      "categoriesTriggered": ["VTE"],
+      "signalCount": 2
+    },
+    {
+      "id": "TC_COMPARTMENT_FASCIOTOMY",
+      "label": "Compartment syndrome (Dx text + fasciotomy CPT)",
+      "module": "compartment",
+      "bucket": "needs_review",
+      "status": "compartment_confirmed",
+      "description": "Text cue for compartment syndrome with fasciotomy CPT within 30d",
+      "patientData": {
+        "times": {
+          "DxInstant": "2025-08-03T11:00:00Z",
+          "CPTInstant": "2025-08-03T14:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-08-03T11:00:00Z",
+            "source": "ED",
+            "text": "Concern for compartment syndrome; tense compartments."
+          }
+        ],
+        "cpt": [
+          {
+            "ts": "2025-08-03T14:00:00Z",
+            "code": "27600",
+            "text": "Fasciotomy lower leg"
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Dx text/codes",
+          "status": "pass",
+          "evidence": "Compartment syndrome named in note"
+        },
+        {
+          "check": "Fasciotomy CPT",
+          "status": "pass",
+          "evidence": "27600 within 30d"
+        }
+      ],
+      "categoriesTriggered": ["Compartment"],
+      "signalCount": 2
+    },
+    {
+      "id": "TC_MORTALITY_30D_LINKED",
+      "label": "30-day mortality (ortho-linked)",
+      "module": "mortality",
+      "bucket": "needs_review",
+      "status": "mortality_linked",
+      "description": "30-day mortality with orthopedics-linked text cue",
+      "patientData": {
+        "times": {
+          "DischargeInstant": "2025-06-01T12:00:00Z",
+          "DeathInstant": "2025-06-25T08:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-06-26T10:00:00Z",
+            "source": "Review",
+            "text": "Suspected PE after surgery; ortho-related complication."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Expired 30d",
+          "status": "pass",
+          "evidence": "Death at day 24"
+        },
+        {
+          "check": "Ortho-linked text",
+          "status": "pass",
+          "evidence": "PE after surgery text cue"
+        }
+      ],
+      "categoriesTriggered": ["Mortality"],
+      "signalCount": 2
+    },
+    {
+      "id": "TC_MORTALITY_30D_UNRELATED",
+      "label": "30-day mortality (unrelated control)",
+      "module": "mortality",
+      "bucket": "always_reviewed",
+      "status": "mortality_unrelated",
+      "description": "30-day mortality with non-ortho cause; negative control",
+      "patientData": {
+        "times": {
+          "DischargeInstant": "2025-06-01T12:00:00Z",
+          "DeathInstant": "2025-06-20T08:00:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-06-20T09:00:00Z",
+            "source": "Review",
+            "text": "Motor vehicle collision; unrelated to index surgery."
+          }
+        ]
+      },
+      "expectedSignals": [
+        {
+          "check": "Expired 30d",
+          "status": "pass",
+          "evidence": "Death at day 19"
+        },
+        {
+          "check": "Ortho-linked text",
+          "status": "fail",
+          "evidence": "Explicit unrelated cause"
+        }
+      ],
+      "categoriesTriggered": ["Mortality"],
+      "signalCount": 2
+    }
+  ]

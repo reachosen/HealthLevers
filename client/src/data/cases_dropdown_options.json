@@ -1,0 +1,104 @@
+[
+  {
+    "value": "TC_SCH_19H_FAIL",
+    "label": "[timeliness_sch] SCH failure: 19.1h (FAIL)",
+    "module": "timeliness_sch",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_SCH_MISSING_INcision",
+    "label": "[timeliness_sch] SCH missing incision (CAUTION)",
+    "module": "timeliness_sch",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_OPEN_FX_ANTIBIOTICS_LATE",
+    "label": "[timeliness_other] Open fx—antibiotics late; debridement >24h",
+    "module": "timeliness_other",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_SEPTIC_HIP_TARGET_MET",
+    "label": "[timeliness_other] Septic hip—target met",
+    "module": "timeliness_other",
+    "bucket": "always_reviewed"
+  },
+  {
+    "value": "TC_SSI_POSITIVE_DEEP",
+    "label": "[ssi] SSI deep—op debridement",
+    "module": "ssi",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_SSI_RULEOUT",
+    "label": "[ssi] Ruleout—antibiotics no criteria",
+    "module": "ssi",
+    "bucket": "always_reviewed"
+  },
+  {
+    "value": "TC_RTO_UNPLANNED",
+    "label": "[rto] Return to OR - Unplanned",
+    "module": "rto",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_RTO_PLANNED_WITHIN_30D",
+    "label": "[rto] Return to OR - Planned (negative control)",
+    "module": "rto",
+    "bucket": "always_reviewed"
+  },
+  {
+    "value": "TC_READMIT_RELATED",
+    "label": "[readmit] Related readmission",
+    "module": "readmit",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_READMIT_SCHEDULED_FU",
+    "label": "[readmit] Scheduled follow-up (negative control)",
+    "module": "readmit",
+    "bucket": "always_reviewed"
+  },
+  {
+    "value": "TC_NV_DEFICIT",
+    "label": "[neurovascular] Neurovascular deficit",
+    "module": "neurovascular",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_FUNCTION_POOR",
+    "label": "[function] Poor functional outcome",
+    "module": "function",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_IMPLANT_ISSUE",
+    "label": "[implant] Implant issue (XR + CPT removal)",
+    "module": "implant",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_VTE_NO_PROPH",
+    "label": "[vte] VTE without prophylaxis",
+    "module": "vte",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_COMPARTMENT_FASCIOTOMY",
+    "label": "[compartment] Compartment syndrome (Dx text + fasciotomy CPT)",
+    "module": "compartment",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_MORTALITY_30D_LINKED",
+    "label": "[mortality] 30-day mortality (ortho-linked)",
+    "module": "mortality",
+    "bucket": "needs_review"
+  },
+  {
+    "value": "TC_MORTALITY_30D_UNRELATED",
+    "label": "[mortality] 30-day mortality (unrelated control)",
+    "module": "mortality",
+    "bucket": "always_reviewed"
+  }
+]

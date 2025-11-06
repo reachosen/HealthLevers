@@ -1,0 +1,327 @@
+{
+  "Orthopedics": {
+    "timeliness_sch": [
+      {
+        "icon": "🚨",
+        "label": "SCH 19H Fail Rich",
+        "data": {
+          "id": "DEMO_SCH_19H_FAIL_RICH",
+          "patient": { 
+            "mrn": "123456", 
+            "name": "Samantha P", 
+            "age": 9 
+          },
+          "encounter": { 
+            "id": "E1001", 
+            "location": "ED", 
+            "disposition": "OR", 
+            "admissionService": "Pediatric Hospital Medicine" 
+          },
+          "times": {
+            "ArrivalInstant": "2025-08-18T08:00:00Z",
+            "OrthoConsultInstant": "2025-08-18T10:30:00Z",
+            "NPOStartInstant": "2025-08-18T08:30:00Z",
+            "IncisionStartInstant": "2025-08-19T03:06:00Z",
+            "ProcedureEndInstant": "2025-08-19T04:10:00Z",
+            "AnesthesiaClearanceInstant": "2025-08-18T18:45:00Z"
+          },
+          "events": {
+            "arrival": "2025-08-18T08:00:00Z",
+            "consult": { "ortho": "2025-08-18T10:30:00Z" },
+            "imaging": { "xray": "2025-08-18T11:05:00Z", "ct": "2025-08-18T11:40:00Z" },
+            "surgery": { "start": "2025-08-19T03:06:00Z", "end": "2025-08-19T04:10:00Z" }
+          },
+          "consults": { 
+            "ortho": { "provider": "Smith, MD" }, 
+            "anesthesia": { "provider": "Lee, MD" } 
+          },
+          "imaging": {
+            "xray": { "performed": true, "time": "2025-08-18T11:05:00Z" },
+            "ct": { "performed": true, "time": "2025-08-18T11:40:00Z", "reason": "rule out head injury" }
+          },
+          "surgery": { 
+            "procedure": "CRPP SCH", 
+            "room": "OR-4", 
+            "priority": "Urgent" 
+          },
+          "clinical": { 
+            "neurovascular_compromise": false, 
+            "open_fracture": false 
+          },
+          "notes": [
+            { 
+              "ts": "2025-08-18T11:55:00Z", 
+              "source": "ED Nurse", 
+              "text": "Child ate crackers at 11:45 despite NPO instructions. Team notified. NPO violation documented." 
+            },
+            { 
+              "ts": "2025-08-18T12:20:00Z", 
+              "source": "ED Physician", 
+              "text": "Awaiting CT due to minor head injury concern; CT scanner backlog. Trauma service handling higher-priority case in OR." 
+            },
+            { 
+              "ts": "2025-08-18T13:10:00Z", 
+              "source": "Orthopedics Consult", 
+              "text": "Supracondylar humerus fracture, type IIb. Plan urgent CRPP. Non-operative management not appropriate." 
+            },
+            { 
+              "ts": "2025-08-18T17:40:00Z", 
+              "source": "OR Scheduling", 
+              "text": "No OR availability until 02:00; after-hours staff required. Will place case at first available slot overnight." 
+            },
+            { 
+              "ts": "2025-08-18T18:10:00Z", 
+              "source": "Hospital Medicine", 
+              "text": "Admitted to Pediatric Hospital Medicine pending OR; Ortho to follow." 
+            },
+            { 
+              "ts": "2025-08-18T18:50:00Z", 
+              "source": "Anesthesia Pre-op", 
+              "text": "ASA 2. Cleared for OR at 18:45. NPO re-established at 12:00 after violation." 
+            },
+            { 
+              "ts": "2025-08-19T04:20:00Z", 
+              "source": "Operative Note", 
+              "text": "CRPP performed for supracondylar humerus fracture. Operative findings confirm SCH; no complications." 
+            }
+          ],
+          "derived": { 
+            "arrival_to_surgery_min": 1146, 
+            "hoursToSurgery": 19.1, 
+            "timelyFlag": false, 
+            "borderlineNearTarget": true 
+          },
+          "targets": { 
+            "surgeryHours": 19 
+          }
+        }
+      },
+      {
+        "icon": "✅",
+        "label": "SCH 19H Pass",
+        "data": {
+          "id": "DEMO_SCH_19H_PASS",
+          "patient": {
+            "mrn": "654321",
+            "name": "Jamie L",
+            "age": 7
+          },
+          "encounter": {
+            "id": "E1002",
+            "location": "ED",
+            "disposition": "OR"
+          },
+          "events": {
+            "arrival": "2025-08-18T08:00:00Z",
+            "surgery": {
+              "start": "2025-08-18T16:45:00Z",
+              "end": "2025-08-18T17:30:00Z"
+            }
+          },
+          "times": {
+            "ArrivalInstant": "2025-08-18T08:00:00Z",
+            "IncisionStartInstant": "2025-08-18T16:45:00Z"
+          }
+        }
+      }
+    ],
+    "timeliness_urgent": [
+      {
+        "icon": "🦴",
+        "label": "Open Fx Abx Late",
+        "data": {
+          "id": "DEMO_OPENFX_ABX_LATE",
+          "patient": {
+            "mrn": "789012",
+            "name": "Alex R",
+            "age": 11
+          },
+          "encounter": {
+            "id": "E2002",
+            "location": "ED",
+            "disposition": "OR"
+          },
+          "events": {
+            "arrival": "2025-08-18T08:00:00Z",
+            "surgery": {
+              "start": "2025-08-19T14:12:00Z"
+            }
+          },
+          "clinical": {
+            "open_fracture": true,
+            "gustilo_grade": "II"
+          },
+          "times": {
+            "ArrivalInstant": "2025-08-18T08:00:00Z",
+            "IncisionStartInstant": "2025-08-19T14:12:00Z",
+            "AbxFirstDose": "2025-08-18T10:40:00Z",
+            "DebridementStart": "2025-08-19T14:12:00Z"
+          },
+          "notes": [
+            {
+              "ts": "2025-08-18T09:15:00Z",
+              "source": "ED",
+              "text": "Open fracture; Gustilo II. Awaiting vascular consult caused delay."
+            }
+          ]
+        }
+      }
+    ],
+    "ssi_assessment": [
+      {
+        "icon": "🦠",
+        "label": "SSI Superficial",
+        "data": {
+          "id": "DEMO_SSI_SUPERFICIAL",
+          "patient": {
+            "mrn": "555123",
+            "name": "Taylor M",
+            "age": 12
+          },
+          "encounter": {
+            "id": "E3001",
+            "location": "OR",
+            "disposition": "Ward"
+          },
+          "events": {
+            "surgery": {
+              "start": "2025-08-10T09:00:00Z",
+              "end": "2025-08-10T11:30:00Z"
+            },
+            "infection_onset": "2025-08-17T14:00:00Z"
+          },
+          "clinical": {
+            "ssi_type": "superficial",
+            "wound_culture": "S. aureus"
+          },
+          "times": {
+            "IncisionStartInstant": "2025-08-10T09:00:00Z",
+            "AbxFirstDose": "2025-08-10T08:30:00Z"
+          }
+        }
+      }
+    ],
+    "return_or": [
+      {
+        "icon": "🔄",
+        "label": "Unplanned Return",
+        "data": {
+          "id": "DEMO_RETURN_OR_UNPLANNED",
+          "patient": {
+            "mrn": "777888",
+            "name": "Morgan K",
+            "age": 8
+          },
+          "encounter": {
+            "id": "E4001",
+            "location": "OR",
+            "disposition": "OR"
+          },
+          "events": {
+            "initial_surgery": "2025-08-15T10:00:00Z",
+            "return_surgery": "2025-08-17T16:30:00Z"
+          },
+          "clinical": {
+            "return_reason": "hardware malposition",
+            "planned": false,
+            "fixation_loss": true
+          },
+          "times": {
+            "IncisionStartInstant": "2025-08-15T10:00:00Z",
+            "ReturnIncisionStart": "2025-08-17T16:30:00Z"
+          },
+          "notes": [
+            {
+              "ts": "2025-08-17T14:00:00Z",
+              "source": "OR",
+              "text": "Hardware loosening detected on imaging. Unplanned return for revision."
+            }
+          ]
+        }
+      }
+    ],
+    "neurovascular_injury": [
+      {
+        "icon": "🧠",
+        "label": "Radial Nerve Injury",
+        "data": {
+          "id": "DEMO_NEURO_RADIAL",
+          "patient": {
+            "mrn": "999111",
+            "name": "Riley S",
+            "age": 10
+          },
+          "encounter": {
+            "id": "E5001",
+            "location": "OR",
+            "disposition": "Ward"
+          },
+          "events": {
+            "surgery": {
+              "start": "2025-08-12T11:00:00Z",
+              "end": "2025-08-12T12:30:00Z"
+            }
+          },
+          "clinical": {
+            "neurovascular_compromise": true,
+            "nerve_affected": "radial",
+            "onset": "post_operative",
+            "persistent_deficit": true
+          },
+          "times": {
+            "IncisionStartInstant": "2025-08-12T11:00:00Z",
+            "IncisionEndInstant": "2025-08-12T12:30:00Z"
+          },
+          "notes": [
+            {
+              "ts": "2025-08-12T14:00:00Z",
+              "source": "Post-op",
+              "text": "New radial nerve deficit noted post-operatively. Unable to extend wrist."
+            }
+          ]
+        }
+      }
+    ],
+    "vte_prophylaxis": [
+      {
+        "icon": "🩸",
+        "label": "VTE with Prophylaxis",
+        "data": {
+          "id": "DEMO_VTE_PROPHYLAXIS",
+          "patient": {
+            "mrn": "888777",
+            "name": "Avery C",
+            "age": 15
+          },
+          "encounter": {
+            "id": "E6001",
+            "location": "OR",
+            "disposition": "Ward"
+          },
+          "events": {
+            "surgery": {
+              "start": "2025-08-20T09:00:00Z",
+              "end": "2025-08-20T11:00:00Z"
+            }
+          },
+          "clinical": {
+            "high_risk_patient": true,
+            "vte_confirmed": false,
+            "prophylaxis_ordered": true
+          },
+          "times": {
+            "IncisionStartInstant": "2025-08-20T09:00:00Z",
+            "VteProphylaxisStart": "2025-08-20T18:00:00Z"
+          },
+          "notes": [
+            {
+              "ts": "2025-08-20T18:00:00Z",
+              "source": "Ward",
+              "text": "VTE prophylaxis initiated per protocol. High-risk patient."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

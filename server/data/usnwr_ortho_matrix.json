@@ -1,0 +1,55 @@
+{
+  "modules": [
+    {
+      "id": "timeliness_sch",
+      "title": "SCH Timeliness",
+      "usnwrQuestion": "Surgery for supracondylar humeral fractures within 19 hours",
+      "whyReview": "Time-sensitive ortho procedure requiring urgent intervention",
+      "groups": ["Core", "Delay Drivers"],
+      "followups": [],
+      "signals": [
+        {
+          "id": "sch_timing",
+          "label": "SCH ≤19h timing",
+          "group": "Core",
+          "definition": "Surgery completion within 19 hours of arrival",
+          "tooltip": "Core timing requirement for supracondylar humeral fractures"
+        }
+      ]
+    },
+    {
+      "id": "timeliness_other",
+      "title": "Other Timeliness",
+      "usnwrQuestion": "Timely interventions for various ortho conditions",
+      "whyReview": "Time-sensitive procedures requiring prompt care",
+      "groups": ["Core"],
+      "followups": [],
+      "signals": [
+        {
+          "id": "septic_timing",
+          "label": "Septic hip timing",
+          "group": "Core",
+          "definition": "Urgent septic hip intervention timing",
+          "tooltip": "Time-critical intervention for septic hip"
+        }
+      ]
+    },
+    {
+      "id": "ssi",
+      "title": "Surgical Site Infection",
+      "usnwrQuestion": "SSI prevention and management",
+      "whyReview": "Critical patient safety outcome",
+      "groups": ["Core"],
+      "followups": [],
+      "signals": [
+        {
+          "id": "ssi_deep",
+          "label": "Deep SSI",
+          "group": "Core",
+          "definition": "Deep surgical site infection requiring intervention",
+          "tooltip": "Serious complication requiring surgical management"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "specialty": "Orthopedics",
+  "generated_from": "testCases.json",
+  "cases": [
+    {
+      "id": "TC_SCH_19H_FAIL",
+      "label": "SCH failure: 19.1h (FAIL)",
+      "module": "timeliness_sch",
+      "bucket": "needs_review",
+      "status": "fail",
+      "description": "SCH case failing 19h target by 6 minutes",
+      "patient_payload": {
+        "times": {
+          "ArrivalInstant": "2025-02-04T00:00:00Z",
+          "IncisionStartInstant": "2025-02-04T19:06:00Z"
+        }
+      }
+    },
+    {
+      "id": "TC_SCH_MISSING_INcision",
+      "label": "SCH missing incision (CAUTION)",
+      "module": "timeliness_sch",
+      "bucket": "needs_review",
+      "status": "caution",
+      "description": "No incision time provided → caution workflow",
+      "patient_payload": {
+        "times": {
+          "ArrivalInstant": "2025-02-05T10:00:00Z"
+        }
+      }
+    },
+    {
+      "id": "TC_OPEN_FX_ANTIBIOTICS_LATE",
+      "label": "Open fx—antibiotics late; debridement >24h",
+      "module": "timeliness_other",
+      "bucket": "needs_review",
+      "status": "fail",
+      "description": "Open fracture with delayed abx and debridement beyond 24h",
+      "patient_payload": {
+        "times": {
+          "ArrivalInstant": "2025-04-05T14:00:00Z",
+          "AbxFirstDose": "2025-04-05T16:40:00Z",
+          "DebridementStart": "2025-04-06T20:10:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-04-05T14:15:00Z",
+            "source": "ED",
+            "text": "Open tibia fracture Gustilo III; awaiting vascular consult."
+          },
+          {
+            "ts": "2025-04-06T18:00:00Z",
+            "source": "OR",
+            "text": "Vascular team cleared; proceeding to OR."
+          }
+        ]
+      }
+    },
+    {
+      "id": "TC_SEPTIC_HIP_TARGET_MET",
+      "label": "Septic hip—target met",
+      "module": "timeliness_other",
+      "bucket": "always_reviewed",
+      "status": "pass",
+      "description": "Septic hip meeting emergency timing targets",
+      "patient_payload": {
+        "times": {
+          "ArrivalInstant": "2025-03-10T02:30:00Z",
+          "IncisionStartInstant": "2025-03-10T08:15:00Z"
+        },
+        "notes": [
+          {
+            "ts": "2025-03-10T03:00:00Z",
+            "source": "ED",
+            "text": "Febrile, irritable; hip effusion on US."
+          },
+          {
+            "ts": "2025-03-10T04:30:00Z",
+            "source": "Ortho",
+            "text": "Septic arthritis suspected; NPO maintained."
+          }
+        ]
+      }
+    }
+  ]
+}

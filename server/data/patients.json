@@ -1,0 +1,83 @@
+{
+  "TC_SCH_PASS": {
+    "id": "TC_SCH_PASS",
+    "description": "SCH - On-time case",
+    "specialty": "ortho_peds",
+    "data": {
+      "ArrivalInstant": "2025-01-10T08:00:00Z",
+      "IncisionStartInstant": "2025-01-10T18:30:00Z",
+      "DiagnosisCode": "S42.412A",
+      "ServiceAtAdmit": "Orthopedics",
+      "OperativeNote": "Supracondylar humerus fracture confirmed; CRPP performed.",
+      "Evidence": ["ED arrival 08:00 (ADT)", "Incision 18:30 (OR)"]
+    },
+    "editable_notes": "No delays documented."
+  },
+  "TC_SCH_DELAY_CT_NONORTHO_NPO": {
+    "id": "TC_SCH_DELAY_CT_NONORTHO_NPO",
+    "description": "SCH - Delayed, non-ortho, NPO violation",
+    "specialty": "ortho_peds",
+    "data": {
+      "ArrivalInstant": "2025-02-01T06:05:00Z",
+      "IncisionStartInstant": "2025-02-02T03:45:00Z",
+      "DiagnosisCode": "S42.413A",
+      "ServiceAtAdmit": "Pediatrics",
+      "OperativeNote": "Supracondylar fracture treated with CRPP.",
+      "Evidence": ["ED arrival 06:05 (ADT)", "Incision 03:45 (OR)"]
+    },
+    "editable_notes": "Head trauma requiring CT; NPO violated at 20:00 (juice given)."
+  },
+  "TC_SCH_MULTIPROC_PLANNED": {
+    "id": "TC_SCH_MULTIPROC_PLANNED",
+    "description": "SCH - Multi-procedure with planned return",
+    "specialty": "ortho_peds",
+    "data": {
+      "ArrivalInstant": "2025-03-11T10:10:00Z",
+      "IncisionStartInstant": "2025-03-11T22:00:00Z",
+      "DiagnosisCode": "S42.411A",
+      "ServiceAtAdmit": "Orthopedics",
+      "OperativeNote": "Supracondylar fracture; CRPP + ulnar nerve neurolysis; staged pin removal planned.",
+      "Evidence": ["ED arrival 10:10 (ADT)", "Incision 22:00 (OR)"]
+    },
+    "editable_notes": "Staged pin removal planned in 4 weeks."
+  },
+  "TC_OPENFX_LATE_BOTH": {
+    "id": "TC_OPENFX_LATE_BOTH",
+    "description": "Open Fx - Late antibiotics and debridement",
+    "specialty": "ortho_peds",
+    "data": {
+      "FirstIVAbxInstant": "2025-04-05T16:40:00Z",
+      "DebridementStart": "2025-04-06T20:10:00Z",
+      "GustiloClass": "III",
+      "DelayReason": "Awaiting vascular consult",
+      "Evidence": ["Abx 16:40 (ED MAR)", "I&D 27.5h (OR)"]
+    },
+    "editable_notes": "Complex soft tissue injury; vascular team delayed OR start."
+  },
+  "TC_SSI_POSITIVE_DEEP": {
+    "id": "TC_SSI_POSITIVE_DEEP",
+    "description": "SSI - Deep infection with culture",
+    "specialty": "ortho_peds",
+    "data": {
+      "CultureResult": true,
+      "NewPostopAntibiotics": true,
+      "WoundSignsText": true,
+      "ProcedureCategory": "Elbow pinning",
+      "ReturnToOR": true,
+      "Evidence": ["Drainage + erythema (clinic)", "Culture: S. aureus (+)", "Return to OR for washout"]
+    },
+    "editable_notes": "Deep infection suspected; purulence noted intra-op."
+  },
+  "TC_RTO_UNPLANNED": {
+    "id": "TC_RTO_UNPLANNED",
+    "description": "RTO - Unplanned return to OR",
+    "specialty": "ortho_peds",
+    "data": {
+      "ReturnORDate": "2025-05-15T09:00:00Z",
+      "PlannedStagedCue": false,
+      "Indication": "Loss of fixation",
+      "Evidence": ["XR: pin migration", "Op: revision fixation"]
+    },
+    "editable_notes": "No planned or staged language found."
+  }
+}

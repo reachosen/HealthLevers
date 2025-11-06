@@ -1,0 +1,201 @@
+{
+  "ortho_peds": {
+    "id": "ortho_peds",
+    "name": "Orthopedics (Peds)",
+    "questions": [
+      {
+        "id": "sch_19h",
+        "label": "SCH timeliness ≤19h",
+        "description": "Surgery ≤19h from ED arrival?",
+        "key_fields": ["ArrivalInstant", "IncisionStartInstant", "DiagnosisCode", "ServiceAtAdmit", "OperativeNote"],
+        "validation": "hours_to_surgery <= 19",
+        "signal_chips": ["On-time ≤19h", "Dx confirmed SCH", "Non-Ortho admit", "NPO violation", "Workup delay", "Multi-procedure", "Planned return", "Competing priority"],
+        "signal_defs": {
+          "On-time ≤19h": { "definition": "Surgery start within 19 hours of ED arrival.", "rule": "hours_to_surgery <= 19" },
+          "Dx confirmed SCH": { "definition": "Op note confirms supracondylar humerus fracture.", "rule": "operative_note contains 'supracondylar'" },
+          "Non-Ortho admit": { "definition": "Admitted to non-orthopedic service.", "rule": "service_at_admit != 'Orthopedics'" },
+          "NPO violation": { "definition": "Any pre-op NPO breach documented.", "rule": "note/order indicates NPO breach" },
+          "Workup delay": { "definition": "Documented workup caused delay (e.g., CT head).", "rule": "notes contain delay reason" },
+          "Multi-procedure": { "definition": "Multiple procedures performed same session.", "rule": "or_log_count > 1" },
+          "Planned return": { "definition": "Staged/planned reoperation documented.", "rule": "notes contain 'planned' or 'staged'" },
+          "Competing priority": { "definition": "Higher-priority injuries delayed surgery.", "rule": "notes mention head/organ trauma" }
+        }
+      },
+      {
+        "id": "openfx_time",
+        "label": "Open fracture antibiotics & debridement",
+        "description": "Were abx and debridement timely?",
+        "key_fields": ["FirstIVAbxInstant", "DebridementStart", "GustiloClass", "DelayReason"],
+        "validation": "abx_soon && debridement<=24h",
+        "signal_chips": ["Abx given", "Debridement ≤24h", "Gustilo class", "Delay reason"],
+        "signal_defs": {
+          "Abx given": { "definition": "First IV antibiotics given within 3 hours of arrival.", "rule": "first_abx_time <= 3h" },
+          "Debridement ≤24h": { "definition": "Surgical debridement within 24 hours of injury.", "rule": "debridement_time <= 24h" },
+          "Gustilo class": { "definition": "Gustilo-Anderson classification documented.", "rule": "gustilo_class in [1,2,3A,3B,3C]" },
+          "Delay reason": { "definition": "Any documented reason for treatment delay.", "rule": "delay_reason_documented" }
+        }
+      },
+      {
+        "id": "septic_hip_12h",
+        "label": "Septic hip source control ≤12h",
+        "description": "Was source control done ≤12h?",
+        "key_fields": ["ArrivalInstant", "SourceControlStart", "LabsImagingText", "DelayReason"],
+        "validation": "source_control<=12h",
+        "signal_chips": ["On-time ≤12h", "Delay reason"]
+      },
+      {
+        "id": "scfe_24h",
+        "label": "SCFE fixation ≤24h",
+        "description": "Urgent fixation within 24h?",
+        "key_fields": ["ArrivalInstant", "FixationStart", "StabilityType", "ServiceAtAdmit"],
+        "validation": "fixation<=24h",
+        "signal_chips": ["On-time ≤24h", "Non-Ortho admit"]
+      },
+      {
+        "id": "ssi_30_90",
+        "label": "SSI (30/90d)",
+        "description": "Post-op SSI per NHSN windows?",
+        "key_fields": ["CultureResult", "NewPostopAntibiotics", "WoundSignsText", "ProcedureCategory", "ReturnToOR"],
+        "validation": "signs && (culture || abx) within NHSN windows",
+        "signal_chips": ["Signs present", "Positive culture", "New postop antibiotics", "Deep/organ-space cue"],
+        "signal_defs": {
+          "Signs present": { "definition": "Clinical signs of infection documented.", "rule": "signs: redness|swelling|warmth|pain" },
+          "Positive culture": { "definition": "Positive wound or deep tissue culture.", "rule": "culture_result == positive" },
+          "New postop antibiotics": { "definition": "New antibiotics started post-operatively for infection.", "rule": "new_antibiotics && indication == infection" },
+          "Deep/organ-space cue": { "definition": "Evidence of deep or organ-space SSI vs superficial.", "rule": "deep_tissue || organ_space_involvement" }
+        }
+      },
+      {
+        "id": "rto_unplanned",
+        "label": "Return to OR (unplanned?)",
+        "description": "Was return unplanned and related?",
+        "key_fields": ["ReturnORDate", "PlannedStagedCue", "Indication"],
+        "validation": "return<=30d && !planned",
+        "signal_chips": [
+          "Return within 30d",
+          "Planned/staged?",
+          "Indication"
+        ]
+      },
+      {
+        "id": "readmit_attrib",
+        "label": "Readmit related?",
+        "description": "7/30-day readmit attribution",
+        "key_fields": ["Readmit7d", "Readmit30d", "RelatedCue", "ScheduledFU"],
+        "validation": "readmit && related && !scheduled",
+        "signal_chips": [
+          "Readmit 7d/30d",
+          "Related cue",
+          "Scheduled follow-up?"
+        ]
+      },
+      {
+        "id": "nv_newdeficit",
+        "label": "New NV deficit",
+        "description": "New post-op deficit vs baseline?",
+        "key_fields": ["PreNV", "PostNV", "Notes"],
+        "validation": "pre_normal && post_abnormal",
+        "signal_chips": [
+          "Pre normal?",
+          "Post abnormal?"
+        ]
+      },
+      {
+        "id": "function_90d",
+        "label": "Function @90d",
+        "description": "ROM/clearance/mal-nonunion",
+        "key_fields": ["NumericROM", "ClearedForSports", "MalNonunionImaging"],
+        "validation": "rom_present || clearance || mal/nonunion",
+        "signal_chips": [
+          "Numeric ROM",
+          "Cleared for sports",
+          "Mal/nonunion imaging"
+        ]
+      },
+      {
+        "id": "implant_issue",
+        "label": "Hardware issue",
+        "description": "Imaging cue or revision CPT",
+        "key_fields": ["ImagingCue", "RevisionRemovalCPT"],
+        "validation": "imaging || revision_cpt",
+        "signal_chips": [
+          "Imaging cue",
+          "Revision/removal CPT"
+        ]
+      },
+      {
+        "id": "vte_event",
+        "label": "VTE + prophylaxis",
+        "description": "VTE event and prophylaxis",
+        "key_fields": ["VTEDx", "VTEImaging", "FirstAnticoagInstant"],
+        "validation": "vte || imaging and prophylaxis given?",
+        "signal_chips": [
+          "VTE dx/imaging",
+          "Prophylaxis given?"
+        ]
+      },
+      {
+        "id": "compartment_30d",
+        "label": "Compartment syndrome",
+        "description": "Dx text or fasciotomy CPT",
+        "key_fields": ["DxTextCue", "FasciotomyCPT"],
+        "validation": "dx_text || cpt",
+        "signal_chips": [
+          "Dx text/codes",
+          "Fasciotomy CPT"
+        ]
+      },
+      {
+        "id": "mortality_30d",
+        "label": "Mortality 30d",
+        "description": "Death within 30d & linkage",
+        "key_fields": ["ExpiredIndex", "Expired30d", "OrthoLinkedText"],
+        "validation": "expired && ortho_link?",
+        "signal_chips": [
+          "Expired 30d",
+          "Ortho-linked text"
+        ]
+      }
+    ]
+  },
+  "cardiology": {
+    "id": "cardiology",
+    "name": "Cardiology",
+    "questions": [
+      {
+        "id": "door_to_balloon",
+        "label": "Door-to-Balloon Time (≤90min)",
+        "description": "Primary PCI timing for STEMI patients",
+        "key_fields": ["ArrivalInstant", "BalloonInflationInstant", "ECGTime", "STEMIConfirmed"],
+        "validation": "door_to_balloon <= 90"
+      },
+      {
+        "id": "readmission_30d",
+        "label": "30-Day Heart Failure Readmission",
+        "description": "Unplanned readmissions for heart failure within 30 days",
+        "key_fields": ["DischargeDate", "ReadmissionDate", "HeartFailureDx", "ReadmissionReason"],
+        "validation": "readmission_within_30_days"
+      }
+    ]
+  },
+  "neurology": {
+    "id": "neurology",
+    "name": "Neurology",
+    "questions": [
+      {
+        "id": "stroke_thrombolysis",
+        "label": "Stroke Thrombolysis Timing (≤4.5h)",
+        "description": "Time to tPA administration for acute stroke patients",
+        "key_fields": ["SymptomOnset", "ArrivalInstant", "tPAAdministration", "NIHSSScore"],
+        "validation": "symptom_to_tpa <= 4.5"
+      },
+      {
+        "id": "seizure_control",
+        "label": "Seizure Control Documentation",
+        "description": "Adequate seizure management and monitoring protocols",
+        "key_fields": ["SeizureFrequency", "MedicationCompliance", "EEGResults", "ControlStatus"],
+        "validation": "seizure_control_adequate"
+      }
+    ]
+  }
+}
