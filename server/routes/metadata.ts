@@ -3,6 +3,11 @@
  *
  * REST endpoints for fetching v9.2 metadata from the database.
  * All endpoints return JSON and are designed for <200ms response times.
+ *
+ * Features:
+ * - In-memory caching with 1-hour TTL
+ * - Cache hit/miss logging
+ * - Manual cache clearing
  */
 
 import { Router } from 'express';
@@ -21,6 +26,69 @@ import { isAuthenticated } from '../replitAuth';
 
 const router = Router();
 
+// =============================================================================
+// CACHING CONFIGURATION
+// =============================================================================
+
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+const cache = new Map<string, { data: any; timestamp: number }>();
+
+// Cache statistics
+let cacheStats = {
+  hits: 0,
+  misses: 0,
+  sets: 0,
+  clears: 0,
+};
+
+/**
+ * Get data from cache if not expired
+ */
+function getFromCache(key: string): any | null {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    cacheStats.hits++;
+    console.log(`✅ Cache HIT: ${key} (age: ${Math.round((Date.now() - cached.timestamp) / 1000)}s)`);
+    return cached.data;
+  }
+  cacheStats.misses++;
+  console.log(`❌ Cache MISS: ${key}`);
+  return null;
+}
+
+/**
+ * Set data in cache with current timestamp
+ */
+function setCache(key: string, data: any): void {
+  cache.set(key, { data, timestamp: Date.now() });
+  cacheStats.sets++;
+  console.log(`💾 Cached: ${key} (total cached: ${cache.size})`);
+}
+
+/**
+ * Clear all cache entries
+ */
+function clearCache(): void {
+  cache.clear();
+  cacheStats.clears++;
+  console.log(`🗑️  Cache cleared (hits: ${cacheStats.hits}, misses: ${cacheStats.misses})`);
+}
+
+/**
+ * Get cache statistics
+ */
+function getCacheStats() {
+  const totalRequests = cacheStats.hits + cacheStats.misses;
+  const hitRate = totalRequests > 0 ? (cacheStats.hits / totalRequests) * 100 : 0;
+
+  return {
+    ...cacheStats,
+    totalRequests,
+    hitRate: Math.round(hitRate * 100) / 100,
+    cacheSize: cache.size,
+  };
+}
+
 // All metadata routes require authentication
 router.use(isAuthenticated);
 
@@ -30,6 +98,10 @@ router.use(isAuthenticated);
 // =============================================================================
 router.get('/metrics', async (req, res) => {
   try {
+    const cacheKey = 'all_metrics';
+    const cached = getFromCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const metrics = await db.select().from(metric);
 
     // Group by specialty
@@ -51,13 +123,16 @@ router.get('/metrics', async (req, res) => {
         );
       });
 
-    res.json({
+    const response = {
       specialties: sortedGrouped,
       summary: {
         totalMetrics: metrics.length,
         totalSpecialties: Object.keys(grouped).length,
       },
-    });
+    };
+
+    setCache(cacheKey, response);
+    res.json(response);
   } catch (error) {
     console.error('Error fetching metrics:', error);
     res.status(500).json({ error: 'Failed to fetch metrics' });
@@ -95,6 +170,9 @@ router.get('/metrics/:metric_id', async (req, res) => {
 router.get('/signals/:metric_id', async (req, res) => {
   try {
     const { metric_id } = req.params;
+    const cacheKey = `signals_${metric_id}`;
+    const cached = getFromCache(cacheKey);
+    if (cached) return res.json(cached);
 
     // Verify metric exists
     const [metricData] = await db
@@ -122,7 +200,7 @@ router.get('/signals/:metric_id', async (req, res) => {
       return acc;
     }, {} as Record<string, typeof signals>);
 
-    res.json({
+    const response = {
       metric_id,
       metricName: metricData.metricName,
       specialty: metricData.specialty,
@@ -135,7 +213,10 @@ router.get('/signals/:metric_id', async (req, res) => {
         signalsWithGroups: signals.filter(s => s.groupId).length,
         signalsWithoutGroups: signals.filter(s => !s.groupId).length,
       },
-    });
+    };
+
+    setCache(cacheKey, response);
+    res.json(response);
   } catch (error) {
     console.error('Error fetching signals:', error);
     res.status(500).json({ error: 'Failed to fetch signals' });
@@ -325,6 +406,9 @@ router.get('/prompts/:metric_id', async (req, res) => {
 router.get('/complete/:metric_id', async (req, res) => {
   try {
     const { metric_id } = req.params;
+    const cacheKey = `complete_${metric_id}`;
+    const cached = getFromCache(cacheKey);
+    if (cached) return res.json(cached);
 
     // Fetch all metadata in parallel
     const [
@@ -349,7 +433,7 @@ router.get('/complete/:metric_id', async (req, res) => {
       return res.status(404).json({ error: `Metric '${metric_id}' not found` });
     }
 
-    res.json({
+    const response = {
       metric: metricData,
       signals,
       groups,
@@ -365,7 +449,10 @@ router.get('/complete/:metric_id', async (req, res) => {
         totalProvenanceRules: provenanceRules.length,
         totalPrompts: prompts.length,
       },
-    });
+    };
+
+    setCache(cacheKey, response);
+    res.json(response);
   } catch (error) {
     console.error('Error fetching complete metadata:', error);
     res.status(500).json({ error: 'Failed to fetch complete metadata' });
@@ -455,6 +542,41 @@ router.get('/search', async (req, res) => {
   } catch (error) {
     console.error('Error searching metrics:', error);
     res.status(500).json({ error: 'Failed to search metrics' });
+  }
+});
+
+// =============================================================================
+// CACHE MANAGEMENT ENDPOINTS
+// =============================================================================
+
+// POST /api/metadata/cache/clear
+// Clear all cached responses
+router.post('/cache/clear', async (req, res) => {
+  try {
+    clearCache();
+    res.json({
+      message: 'Cache cleared successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+    res.status(500).json({ error: 'Failed to clear cache' });
+  }
+});
+
+// GET /api/metadata/cache/stats
+// Get cache performance statistics
+router.get('/cache/stats', async (req, res) => {
+  try {
+    const stats = getCacheStats();
+    res.json({
+      ...stats,
+      cacheDuration: `${CACHE_DURATION / 1000 / 60} minutes`,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error fetching cache stats:', error);
+    res.status(500).json({ error: 'Failed to fetch cache stats' });
   }
 });
 
