@@ -10,7 +10,8 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "validate-db": "tsx scripts/validate-database.ts",
-    "test-parser": "tsx scripts/test-excel-parser.ts"
+    "test-parser": "tsx scripts/test-excel-parser.ts",
+    "seed-metadata": "tsx scripts/seed-metadata.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
