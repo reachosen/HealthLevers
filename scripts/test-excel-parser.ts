@@ -66,6 +66,13 @@ async function testParser() {
 
     const data = await excelParser.parseAllSheets();
 
+    // Step 3.5: Validate relationships between sheets
+    console.log('\n' + '='.repeat(60));
+    console.log('🔗 Step 3.5: Validating Relationships');
+    console.log('='.repeat(60));
+
+    excelParser.validateRelationships(data);
+
     // Step 4: Display detailed statistics
     console.log('\n' + '='.repeat(60));
     console.log('📈 Step 4: Data Statistics');

@@ -287,6 +287,168 @@ export class ExcelParser {
     fs.writeFileSync(outputPath, JSON.stringify(data, null, 2), 'utf-8');
     console.log(`\n💾 Exported parsed data to: ${outputPath}`);
   }
+
+  /**
+   * Validate relationships between sheets
+   * Ensures referential integrity before database insertion
+   */
+  validateRelationships(data: ParsedExcelData): void {
+    console.log('\n🔍 Validating relationships between sheets...\n');
+
+    const errors: string[] = [];
+    const warnings: string[] = [];
+    const {
+      metrics,
+      signalGroups,
+      signalDefs,
+      followups,
+      displayPlans,
+      provenanceRules,
+      prompts,
+    } = data;
+
+    // Build sets for efficient lookup
+    const metricIds = new Set(metrics.map(m => m.metric_id));
+    console.log(`   📊 Found ${metricIds.size} unique metrics`);
+
+    const groupKeys = new Set(
+      signalGroups.map(g => `${g.metric_id}:${g.group_id}`)
+    );
+    console.log(`   📊 Found ${groupKeys.size} unique groups`);
+
+    // Validate signal_group → metric references
+    console.log('\n   🔗 Checking signal_group → metric references...');
+    let validCount = 0;
+    for (const group of signalGroups) {
+      if (!metricIds.has(group.metric_id)) {
+        errors.push(
+          `Signal group '${group.group_id}' references unknown metric '${group.metric_id}'`
+        );
+      } else {
+        validCount++;
+      }
+    }
+    console.log(`      ✅ ${validCount}/${signalGroups.length} valid`);
+
+    // Validate signal_def → metric references
+    console.log('   🔗 Checking signal_def → metric references...');
+    validCount = 0;
+    for (const signal of signalDefs) {
+      if (!metricIds.has(signal.metric_id)) {
+        errors.push(
+          `Signal '${signal.signal_code}' references unknown metric '${signal.metric_id}'`
+        );
+      } else {
+        validCount++;
+      }
+    }
+    console.log(`      ✅ ${validCount}/${signalDefs.length} valid`);
+
+    // Validate signal_def → signal_group references (optional)
+    console.log('   🔗 Checking signal_def → signal_group references...');
+    let referencedCount = 0;
+    let nullCount = 0;
+    for (const signal of signalDefs) {
+      if (signal.group_id === null || signal.group_id === undefined) {
+        nullCount++;
+        continue;
+      }
+
+      referencedCount++;
+      const key = `${signal.metric_id}:${signal.group_id}`;
+      if (!groupKeys.has(key)) {
+        warnings.push(
+          `Signal '${signal.signal_code}' references unknown group '${signal.group_id}' for metric '${signal.metric_id}'`
+        );
+      }
+    }
+    console.log(`      ✅ ${referencedCount} signals reference groups, ${nullCount} have no group`);
+
+    // Validate followup → metric references
+    console.log('   🔗 Checking followup → metric references...');
+    validCount = 0;
+    for (const followup of followups) {
+      if (!metricIds.has(followup.metric_id)) {
+        errors.push(
+          `Followup '${followup.followup_id}' references unknown metric '${followup.metric_id}'`
+        );
+      } else {
+        validCount++;
+      }
+    }
+    console.log(`      ✅ ${validCount}/${followups.length} valid`);
+
+    // Validate display_plan → metric references
+    console.log('   🔗 Checking display_plan → metric references...');
+    validCount = 0;
+    for (const plan of displayPlans) {
+      if (!metricIds.has(plan.metric_id)) {
+        errors.push(
+          `Display plan field '${plan.field_name}' references unknown metric '${plan.metric_id}'`
+        );
+      } else {
+        validCount++;
+      }
+    }
+    console.log(`      ✅ ${validCount}/${displayPlans.length} valid`);
+
+    // Validate provenance_rule → metric references
+    console.log('   🔗 Checking provenance_rule → metric references...');
+    validCount = 0;
+    for (const rule of provenanceRules) {
+      if (!metricIds.has(rule.metric_id)) {
+        errors.push(
+          `Provenance rule for field '${rule.field_name}' references unknown metric '${rule.metric_id}'`
+        );
+      } else {
+        validCount++;
+      }
+    }
+    console.log(`      ✅ ${validCount}/${provenanceRules.length} valid`);
+
+    // Validate prompt → metric references
+    console.log('   🔗 Checking prompt → metric references...');
+    validCount = 0;
+    for (const promptItem of prompts) {
+      if (!metricIds.has(promptItem.metric_id)) {
+        errors.push(
+          `Prompt '${promptItem.prompt_type}' references unknown metric '${promptItem.metric_id}'`
+        );
+      } else {
+        validCount++;
+      }
+    }
+    console.log(`      ✅ ${validCount}/${prompts.length} valid`);
+
+    // Report warnings
+    if (warnings.length > 0) {
+      console.log('\n⚠️  Warnings:');
+      warnings.slice(0, 10).forEach(warn => console.log(`   - ${warn}`));
+      if (warnings.length > 10) {
+        console.log(`   ... and ${warnings.length - 10} more warning(s)`);
+      }
+    }
+
+    // Report errors
+    if (errors.length > 0) {
+      console.error('\n❌ Validation Errors:');
+      errors.slice(0, 20).forEach(err => console.error(`   - ${err}`));
+      if (errors.length > 20) {
+        console.error(`   ... and ${errors.length - 20} more error(s)`);
+      }
+      throw new Error(`${errors.length} referential integrity error(s) found`);
+    }
+
+    console.log('\n✅ All relationship validations passed!');
+    console.log(`   Total relationships validated: ${
+      signalGroups.length +
+      signalDefs.length +
+      followups.length +
+      displayPlans.length +
+      provenanceRules.length +
+      prompts.length
+    }\n`);
+  }
 }
 
 // =============================================================================
