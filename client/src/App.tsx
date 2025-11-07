@@ -14,6 +14,7 @@ import NotFound from "@/pages/not-found";
 import NavbarToggle from "@/components/NavbarToggle";
 import PromptStorePage from "@/pages/promptstore";
 import SetupPage from "@/pages/setup";
+import MetricsPage from "@/pages/metrics";
 import { useState, useEffect } from "react";
 import { useSpecialties } from "@/hooks/useSpecialties";
 import { ProvenancePanel } from "@/components/ProvenancePanel";
@@ -49,15 +50,16 @@ function Router() {
       <NavbarToggle />
       
       <Switch>
-        <Route path="/intake" component={() => <IntakePage 
-          selectedSpecialty={selectedSpecialty} 
+        <Route path="/intake" component={() => <IntakePage
+          selectedSpecialty={selectedSpecialty}
           onSpecialtyChange={setSelectedSpecialty}
           availableSpecialties={availableSpecialties}
         />} />
         <Route path="/promptstore" component={() => <PromptStorePage />} />
         <Route path="/setup" component={() => <SetupPage />} />
-        <Route path="/" component={() => <Home 
-          selectedSpecialty={selectedSpecialty} 
+        <Route path="/metrics" component={() => <MetricsPage />} />
+        <Route path="/" component={() => <Home
+          selectedSpecialty={selectedSpecialty}
           onSpecialtyChange={setSelectedSpecialty}
           availableSpecialties={availableSpecialties}
         />} />
