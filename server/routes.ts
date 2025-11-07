@@ -11,6 +11,7 @@ import OpenAI from "openai";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { promptStore } from "./promptStore";
 import { validateRequest, logPromptUsage } from "../shared/promptRouting";
+import metadataRoutes from "./routes/metadata";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -20,6 +21,9 @@ const openai = new OpenAI({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+
+  // Mount v9.2 metadata API routes
+  app.use('/api/metadata', metadataRoutes);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
