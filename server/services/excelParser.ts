@@ -51,7 +51,7 @@ const FollowupSchema = z.object({
 const DisplayPlanSchema = z.object({
   metric_id: z.string(),
   field_name: z.string(),
-  label: z.string(),
+  label: z.string().nullable().optional(),
   tier: z.string().nullable().optional(),
   visibility_cond: z.string().nullable().optional(),
   order_nbr: z.union([z.number(), z.string()]).nullable().optional(),

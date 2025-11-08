@@ -157,10 +157,13 @@ async function seedMetadata() {
         }
       }
 
+      // Handle label: use field_name as fallback if label is missing
+      const label = d.label || d.field_name;
+
       await db.insert(displayPlan).values({
         metricId: d.metric_id,
         fieldName: d.field_name,
-        label: d.label,
+        label: label,
         tier: d.tier || null,
         visibilityCond: d.visibility_cond || null,
         orderNbr: orderNbr,
