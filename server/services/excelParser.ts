@@ -5,7 +5,7 @@
  * Validates all 8 sheets using Zod schemas before database insertion.
  */
 
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx';
 import { z } from 'zod';
 
 // =============================================================================
