@@ -83,8 +83,8 @@ const PromptSchema = z.object({
 
 // Sheet 8: versions (if exists - for tracking content versions)
 const VersionSchema = z.object({
-  version_id: z.string(),
-  version_name: z.string(),
+  version_id: z.string().nullable().optional(),
+  version_name: z.string().nullable().optional(),
   created_at: z.union([z.date(), z.string()]).nullable().optional(),
   description: z.string().nullable().optional(),
 }).catchall(z.any()); // Allow additional fields
