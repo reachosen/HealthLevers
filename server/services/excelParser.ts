@@ -20,14 +20,14 @@ const MetricSchema = z.object({
   domain: z.string().nullable().optional(),
   threshold_hours: z.union([z.number(), z.string()]).nullable().optional(),
   content_version: z.string().nullable().optional(),
-});
+}).passthrough(); // Allow extra columns from Excel
 
 // Sheet 2: groups
 const SignalGroupSchema = z.object({
   metric_id: z.string(),
   group_id: z.string(),
   group_code: z.string(),
-});
+}).passthrough(); // Allow extra columns from Excel
 
 // Sheet 3: signals
 const SignalDefSchema = z.object({
@@ -36,7 +36,7 @@ const SignalDefSchema = z.object({
   group_id: z.string().nullable().optional(),
   severity: z.string().nullable().optional(),
   status: z.string().nullable().optional(),
-});
+}).passthrough(); // Allow extra columns from Excel
 
 // Sheet 4: followups
 const FollowupSchema = z.object({
@@ -45,7 +45,7 @@ const FollowupSchema = z.object({
   when_cond: z.string().nullable().optional(),
   question_text: z.string(),
   response_type: z.string().nullable().optional(),
-});
+}).passthrough(); // Allow extra columns from Excel
 
 // Sheet 5: display_plan
 const DisplayPlanSchema = z.object({
@@ -55,7 +55,7 @@ const DisplayPlanSchema = z.object({
   tier: z.string().nullable().optional(),
   visibility_cond: z.string().nullable().optional(),
   order_nbr: z.union([z.number(), z.string()]),
-});
+}).passthrough(); // Allow extra columns from Excel
 
 // Sheet 6: provenance_rules
 const ProvenanceRuleSchema = z.object({
@@ -65,7 +65,7 @@ const ProvenanceRuleSchema = z.object({
   key_name: z.string().nullable().optional(),
   field_ref: z.string().nullable().optional(),
   fallback_json: z.any().nullable().optional(), // Will be parsed as JSONB
-});
+}).passthrough(); // Allow extra columns from Excel
 
 // Sheet 7: prompts
 const PromptSchema = z.object({
@@ -79,7 +79,7 @@ const PromptSchema = z.object({
   classifier_2: z.string().nullable().optional(),
   content_version: z.string().nullable().optional(),
   last_changed_at: z.union([z.date(), z.string()]).nullable().optional(),
-});
+}).passthrough(); // Allow extra columns from Excel
 
 // Sheet 8: versions (if exists - for tracking content versions)
 const VersionSchema = z.object({
