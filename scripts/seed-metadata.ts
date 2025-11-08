@@ -144,13 +144,26 @@ async function seedMetadata() {
     // 5. Insert Display Plans
     console.log(`\n5️⃣  Inserting ${data.displayPlans.length} display plan entries...`);
     for (const d of data.displayPlans) {
+      // Handle order_nbr: convert to number or use default value 9999 if missing
+      let orderNbr = 9999; // Default for missing values (will sort to end)
+      if (d.order_nbr !== null && d.order_nbr !== undefined) {
+        if (typeof d.order_nbr === 'number') {
+          orderNbr = d.order_nbr;
+        } else {
+          const parsed = parseInt(String(d.order_nbr));
+          if (!isNaN(parsed)) {
+            orderNbr = parsed;
+          }
+        }
+      }
+
       await db.insert(displayPlan).values({
         metricId: d.metric_id,
         fieldName: d.field_name,
         label: d.label,
         tier: d.tier || null,
         visibilityCond: d.visibility_cond || null,
-        orderNbr: typeof d.order_nbr === 'number' ? d.order_nbr : parseInt(String(d.order_nbr)),
+        orderNbr: orderNbr,
       });
     }
     console.log(`   ✅ Inserted ${data.displayPlans.length} display plan entries`);

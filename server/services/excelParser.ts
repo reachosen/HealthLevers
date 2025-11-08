@@ -54,7 +54,7 @@ const DisplayPlanSchema = z.object({
   label: z.string(),
   tier: z.string().nullable().optional(),
   visibility_cond: z.string().nullable().optional(),
-  order_nbr: z.union([z.number(), z.string()]),
+  order_nbr: z.union([z.number(), z.string()]).nullable().optional(),
 }).passthrough(); // Allow extra columns from Excel
 
 // Sheet 6: provenance_rules
