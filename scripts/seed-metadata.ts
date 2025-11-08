@@ -93,20 +93,42 @@ async function seedMetadata() {
     // 1. Insert Metrics (parent table)
     console.log(`\n1️⃣  Inserting ${data.metrics.length} metrics...`);
     for (const m of data.metrics) {
+      // Handle boolean conversion for 'active' field
+      let activeValue: boolean | null = null;
+      if (m.active !== undefined && m.active !== null) {
+        if (typeof m.active === 'boolean') {
+          activeValue = m.active;
+        } else if (typeof m.active === 'string') {
+          activeValue = m.active.toUpperCase() === 'TRUE';
+        }
+      }
+
       await db.insert(metric).values({
         metricId: m.metric_id,
         specialty: m.specialty,
+        specialtyId: m.specialty_id || null,
+        questionCode: m.question_code || null,
         metricName: m.metric_name,
         domain: m.domain || null,
+        priority: m.priority ? (typeof m.priority === 'number' ? m.priority : parseInt(String(m.priority))) : null,
         thresholdHours: m.threshold_hours ? String(m.threshold_hours) : null,
+        definitionWindow: m.definition_window || null,
+        active: activeValue !== null ? activeValue : true,
+        version: m.version || null,
         contentVersion: m.content_version || null,
       }).onConflictDoUpdate({
         target: metric.metricId,
         set: {
           specialty: m.specialty,
+          specialtyId: m.specialty_id || null,
+          questionCode: m.question_code || null,
           metricName: m.metric_name,
           domain: m.domain || null,
+          priority: m.priority ? (typeof m.priority === 'number' ? m.priority : parseInt(String(m.priority))) : null,
           thresholdHours: m.threshold_hours ? String(m.threshold_hours) : null,
+          definitionWindow: m.definition_window || null,
+          active: activeValue !== null ? activeValue : true,
+          version: m.version || null,
           contentVersion: m.content_version || null,
         }
       });

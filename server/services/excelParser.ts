@@ -16,9 +16,15 @@ import { z } from 'zod';
 const MetricSchema = z.object({
   metric_id: z.string(),
   specialty: z.string(),
+  specialty_id: z.string().nullable().optional(),
+  question_code: z.string().nullable().optional(),
   metric_name: z.string(),
   domain: z.string().nullable().optional(),
+  priority: z.union([z.number(), z.string()]).nullable().optional(),
   threshold_hours: z.union([z.number(), z.string()]).nullable().optional(),
+  definition_window: z.string().nullable().optional(),
+  active: z.union([z.boolean(), z.string()]).nullable().optional(),
+  version: z.string().nullable().optional(),
   content_version: z.string().nullable().optional(),
 }).passthrough(); // Allow extra columns from Excel
 

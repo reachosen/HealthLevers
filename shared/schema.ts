@@ -49,13 +49,22 @@ export type User = typeof users.$inferSelect;
 
 export const metric = pgTable('metric', {
   metricId: text('metric_id').primaryKey(),
-  specialty: text('specialty').notNull(),
+  specialty: text('specialty').notNull(),              // Display name: "Ortho", "Cardiology"
+  specialtyId: text('specialty_id'),                   // Code: "ORTHO", "CARDIOLOGY"
+  questionCode: text('question_code'),                 // USNWR question: "I25", "E24", "I32a"
   metricName: text('metric_name').notNull(),
-  domain: text('domain'),
+  domain: text('domain'),                              // Measurement category: "timeliness", "readmission"
+  priority: integer('priority'),                       // Priority order
   thresholdHours: numeric('threshold_hours'),
+  definitionWindow: text('definition_window'),         // "start_time -> end_time"
+  active: boolean('active').default(true),             // Whether metric is active
+  version: text('version'),                            // "0.0.1"
   contentVersion: text('content_version'),
 }, (table) => ({
   specialtyIdx: index('idx_metric_specialty').on(table.specialty),
+  specialtyIdIdx: index('idx_metric_specialty_id').on(table.specialtyId),
+  questionCodeIdx: index('idx_metric_question_code').on(table.questionCode),
+  activeIdx: index('idx_metric_active').on(table.active),
 }));
 
 export const signalGroup = pgTable('signal_group', {
