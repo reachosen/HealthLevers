@@ -48,7 +48,7 @@ async function seedMetadata() {
     const data = await excelParser.parseAllSheets();
 
     console.log('\n🔍 Step 3: Validating relationships...');
-    excelParser.validateRelationships(data);
+    const expectedCounts = excelParser.validateRelationships(data);
 
     // =========================================================================
     // STEP 2: Clear Existing Metadata (Idempotent)
@@ -290,36 +290,36 @@ async function seedMetadata() {
     };
 
     console.log('\n📊 Database Counts:');
-    console.log(`   Metrics:           ${verification.metrics} (expected: ${data.metrics.length})`);
-    console.log(`   Signal Groups:     ${verification.signalGroups} (expected: ${data.signalGroups.length})`);
-    console.log(`   Signal Defs:       ${verification.signalDefs} (expected: ${data.signalDefs.length})`);
-    console.log(`   Followups:         ${verification.followups} (expected: ${data.followups.length})`);
-    console.log(`   Display Plans:     ${verification.displayPlans} (expected: ${data.displayPlans.length})`);
-    console.log(`   Provenance Rules:  ${verification.provenanceRules} (expected: ${data.provenanceRules.length})`);
-    console.log(`   Prompts:           ${verification.prompts} (expected: ${data.prompts.length})`);
+    console.log(`   Metrics:           ${verification.metrics} (expected: ${expectedCounts.metrics})`);
+    console.log(`   Signal Groups:     ${verification.signalGroups} (expected: ${expectedCounts.signalGroups})`);
+    console.log(`   Signal Defs:       ${verification.signalDefs} (expected: ${expectedCounts.signalDefs})`);
+    console.log(`   Followups:         ${verification.followups} (expected: ${expectedCounts.followups})`);
+    console.log(`   Display Plans:     ${verification.displayPlans} (expected: ${expectedCounts.displayPlans})`);
+    console.log(`   Provenance Rules:  ${verification.provenanceRules} (expected: ${expectedCounts.provenanceRules})`);
+    console.log(`   Prompts:           ${verification.prompts} (expected: ${expectedCounts.prompts})`);
 
-    // Validate counts match
+    // Validate counts match (using unique counts to account for duplicates in Excel)
     const mismatches: string[] = [];
-    if (verification.metrics !== data.metrics.length) {
-      mismatches.push(`Metrics: ${verification.metrics} vs ${data.metrics.length}`);
+    if (verification.metrics !== expectedCounts.metrics) {
+      mismatches.push(`Metrics: ${verification.metrics} vs ${expectedCounts.metrics}`);
     }
-    if (verification.signalGroups !== data.signalGroups.length) {
-      mismatches.push(`Signal Groups: ${verification.signalGroups} vs ${data.signalGroups.length}`);
+    if (verification.signalGroups !== expectedCounts.signalGroups) {
+      mismatches.push(`Signal Groups: ${verification.signalGroups} vs ${expectedCounts.signalGroups}`);
     }
-    if (verification.signalDefs !== data.signalDefs.length) {
-      mismatches.push(`Signal Defs: ${verification.signalDefs} vs ${data.signalDefs.length}`);
+    if (verification.signalDefs !== expectedCounts.signalDefs) {
+      mismatches.push(`Signal Defs: ${verification.signalDefs} vs ${expectedCounts.signalDefs}`);
     }
-    if (verification.followups !== data.followups.length) {
-      mismatches.push(`Followups: ${verification.followups} vs ${data.followups.length}`);
+    if (verification.followups !== expectedCounts.followups) {
+      mismatches.push(`Followups: ${verification.followups} vs ${expectedCounts.followups}`);
     }
-    if (verification.displayPlans !== data.displayPlans.length) {
-      mismatches.push(`Display Plans: ${verification.displayPlans} vs ${data.displayPlans.length}`);
+    if (verification.displayPlans !== expectedCounts.displayPlans) {
+      mismatches.push(`Display Plans: ${verification.displayPlans} vs ${expectedCounts.displayPlans}`);
     }
-    if (verification.provenanceRules !== data.provenanceRules.length) {
-      mismatches.push(`Provenance Rules: ${verification.provenanceRules} vs ${data.provenanceRules.length}`);
+    if (verification.provenanceRules !== expectedCounts.provenanceRules) {
+      mismatches.push(`Provenance Rules: ${verification.provenanceRules} vs ${expectedCounts.provenanceRules}`);
     }
-    if (verification.prompts !== data.prompts.length) {
-      mismatches.push(`Prompts: ${verification.prompts} vs ${data.prompts.length}`);
+    if (verification.prompts !== expectedCounts.prompts) {
+      mismatches.push(`Prompts: ${verification.prompts} vs ${expectedCounts.prompts}`);
     }
 
     if (mismatches.length > 0) {

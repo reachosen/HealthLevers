@@ -307,14 +307,62 @@ export class ExcelParser {
       prompts,
     } = data;
 
-    // Build sets for efficient lookup
+    // Check for duplicates and build sets for efficient lookup
+    console.log('   🔍 Checking for duplicate primary keys...\n');
+
     const metricIds = new Set(metrics.map(m => m.metric_id));
-    console.log(`   📊 Found ${metricIds.size} unique metrics`);
+    if (metricIds.size !== metrics.length) {
+      warnings.push(`Metrics: ${metrics.length - metricIds.size} duplicate(s) found`);
+    }
+    console.log(`   📊 Metrics: ${metrics.length} rows → ${metricIds.size} unique`);
 
     const groupKeys = new Set(
       signalGroups.map(g => `${g.metric_id}:${g.group_id}`)
     );
-    console.log(`   📊 Found ${groupKeys.size} unique groups`);
+    if (groupKeys.size !== signalGroups.length) {
+      warnings.push(`Signal Groups: ${signalGroups.length - groupKeys.size} duplicate(s) found`);
+    }
+    console.log(`   📊 Signal Groups: ${signalGroups.length} rows → ${groupKeys.size} unique`);
+
+    const signalKeys = new Set(
+      signalDefs.map(s => `${s.metric_id}:${s.signal_code}`)
+    );
+    if (signalKeys.size !== signalDefs.length) {
+      warnings.push(`Signal Defs: ${signalDefs.length - signalKeys.size} duplicate(s) found`);
+    }
+    console.log(`   📊 Signal Defs: ${signalDefs.length} rows → ${signalKeys.size} unique`);
+
+    const followupKeys = new Set(
+      followups.map(f => `${f.metric_id}:${f.followup_id}`)
+    );
+    if (followupKeys.size !== followups.length) {
+      warnings.push(`Followups: ${followups.length - followupKeys.size} duplicate(s) found`);
+    }
+    console.log(`   📊 Followups: ${followups.length} rows → ${followupKeys.size} unique`);
+
+    const displayKeys = new Set(
+      displayPlans.map(d => `${d.metric_id}:${d.field_name}`)
+    );
+    if (displayKeys.size !== displayPlans.length) {
+      warnings.push(`Display Plans: ${displayPlans.length - displayKeys.size} duplicate(s) found`);
+    }
+    console.log(`   📊 Display Plans: ${displayPlans.length} rows → ${displayKeys.size} unique`);
+
+    const provenanceKeys = new Set(
+      provenanceRules.map(p => `${p.metric_id}:${p.field_name}`)
+    );
+    if (provenanceKeys.size !== provenanceRules.length) {
+      warnings.push(`Provenance Rules: ${provenanceRules.length - provenanceKeys.size} duplicate(s) found`);
+    }
+    console.log(`   📊 Provenance Rules: ${provenanceRules.length} rows → ${provenanceKeys.size} unique`);
+
+    const promptKeys = new Set(
+      prompts.map(p => `${p.metric_id}:${p.prompt_type}`)
+    );
+    if (promptKeys.size !== prompts.length) {
+      warnings.push(`Prompts: ${prompts.length - promptKeys.size} duplicate(s) found`);
+    }
+    console.log(`   📊 Prompts: ${prompts.length} rows → ${promptKeys.size} unique`);
 
     // Validate signal_group → metric references
     console.log('\n   🔗 Checking signal_group → metric references...');
@@ -448,6 +496,17 @@ export class ExcelParser {
       provenanceRules.length +
       prompts.length
     }\n`);
+
+    // Return unique counts for verification
+    return {
+      metrics: metricIds.size,
+      signalGroups: groupKeys.size,
+      signalDefs: signalKeys.size,
+      followups: followupKeys.size,
+      displayPlans: displayKeys.size,
+      provenanceRules: provenanceKeys.size,
+      prompts: promptKeys.size,
+    };
   }
 }
 
