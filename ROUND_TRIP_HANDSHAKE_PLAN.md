@@ -21,15 +21,32 @@
 
 ## Gap Analysis Summary
 
-### Terminology Clarification
+### Terminology Clarification (From Excel Schema)
 
-**CRITICAL**: Understanding the domain concept
-- **Specialty**: The medical specialty (e.g., ORTHO = Orthopedics)
-- **Domain Question**: The USNWR question identifier (e.g., I25, S02, T01)
-- **metric_id Format**: `{SPECIALTY}_{DOMAIN_QUESTION}` (e.g., ORTHO_I25)
-  - ORTHO_I25 = Orthopedics, Domain Question I25 (Supracondylar fracture timeliness)
-  - ORTHO_S02 = Orthopedics, Domain Question S02 (Safety/complications)
-- **Note**: The existing "domain" field in the metric table (e.g., "timeliness") is a measurement category, NOT the domain question identifier. The domain question is embedded in the metric_id itself.
+**CRITICAL**: The Excel file ALREADY contains all taxonomy information
+
+**Excel Columns**:
+```
+specialty | specialty_id | question_code | metric_name | domain | metric_id
+Ortho     | ORTHO       | I25           | In OR <18hrs| timeliness | ORTHO_I25
+Cardiology| CARDIOLOGY  | E24           | Transplant..| survival   | CARDIOLOGY_E24
+```
+
+**Correct Understanding**:
+- **specialty**: Display name (e.g., "Ortho", "Cardiology")
+- **specialty_id**: Code used in metric_id (e.g., "ORTHO", "CARDIOLOGY")
+- **question_code**: USNWR domain question identifier (e.g., "I25", "E24", "I32a")
+- **domain**: Measurement category (e.g., "timeliness", "readmission", "survival")
+- **metric_id**: Composite identifier = `{specialty_id}_{question_code}[_SUFFIX]`
+  - ORTHO_I25 = ORTHO + I25
+  - ORTHO_I32A_READMIT = ORTHO + I32a + READMIT suffix
+  - CARDIOLOGY_E24 = CARDIOLOGY + E24
+
+**Key Insight**:
+- We should NOT create taxonomy tables from scratch
+- We should EXTRACT taxonomy from the existing Excel data
+- The metric table already has specialty_id, question_code is derivable from metric_id
+- The "domain" field is a measurement category, NOT the question code
 
 ### Current State ✅
 - [x] Core metadata tables (metric, signal_group, signal_def, display_plan, followup, prompt, provenance_rule)
@@ -40,39 +57,44 @@
 
 ### Missing Gaps ❌
 
-#### 1. **Taxonomy & Classification**
-- [ ] Specialty taxonomy (Ortho, Cardiology, Neurology, etc.)
-- [ ] Case type taxonomy (SCH, Hip Fracture, MI, Stroke, etc.)
-- [ ] Diagnosis code mapping (ICD-10 → case types)
-- [ ] Procedure code mapping (CPT → case types)
-- [ ] USNWR question taxonomy (I25, S02, T01, etc. - embedded in metric_id)
+#### 1. **Excel Schema Enhancement**
+- [ ] Add missing columns to metric table (specialty_id, question_code, priority, definition_window, active, version)
+- [ ] Update excelParser to extract these columns
+- [ ] Extract specialty taxonomy from unique (specialty, specialty_id) pairs in Excel
+- [ ] Add question_code index for filtering by USNWR question
 
-#### 2. **Metric Selection & Applicability**
+#### 2. **Taxonomy & Classification**
+- [ ] Case type taxonomy (SCH, Hip Fracture, MI, Stroke, etc.) - NEW table needed
+- [ ] Diagnosis code mapping (ICD-10 → case types) - NEW mapping needed
+- [ ] Procedure code mapping (CPT → case types) - NEW mapping needed
+- [ ] Note: Specialty and question_code taxonomy already exists in Excel!
+
+#### 3. **Metric Selection & Applicability**
 - [ ] Metric applicability rules (age, diagnosis, procedure requirements)
 - [ ] Inclusion/exclusion criteria
 - [ ] Metric-to-specialty mapping (already exists in metric.specialty field)
 - [ ] Metric-to-case-type mapping (which USNWR questions apply to which case types)
 - [ ] Active version tracking
 
-#### 3. **API Contracts**
+#### 4. **API Contracts**
 - [ ] Request/response schemas for all endpoints
 - [ ] Validation rules and error messages
 - [ ] Payload format specifications
 - [ ] Authentication/authorization contracts
 
-#### 4. **State Management**
+#### 5. **State Management**
 - [ ] Case state machine definition
 - [ ] State transition rules
 - [ ] Status tracking
 - [ ] Audit trail
 
-#### 5. **Data Quality**
+#### 6. **Data Quality**
 - [ ] Payload validation schemas
 - [ ] Required field definitions
 - [ ] Data type constraints
 - [ ] Business rule validation
 
-#### 6. **Error Handling**
+#### 7. **Error Handling**
 - [ ] Error catalog with codes
 - [ ] Retry strategies
 - [ ] Fallback mechanisms
@@ -80,43 +102,88 @@
 
 ---
 
-## Missing Metadata Tables
+## Schema Enhancements & New Tables
 
-### 1. SPECIALTY Table
-**Purpose**: Define available specialties and their properties
+### 0. METRIC Table (Enhanced - Already Exists, Add Missing Columns)
+**Purpose**: Add missing Excel columns to existing metric table
+
+**Current Schema** (needs enhancement):
+```sql
+ALTER TABLE metric ADD COLUMN IF NOT EXISTS specialty_id VARCHAR(50);
+ALTER TABLE metric ADD COLUMN IF NOT EXISTS question_code VARCHAR(50);
+ALTER TABLE metric ADD COLUMN IF NOT EXISTS priority INTEGER DEFAULT 1;
+ALTER TABLE metric ADD COLUMN IF NOT EXISTS definition_window TEXT;
+ALTER TABLE metric ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE;
+ALTER TABLE metric ADD COLUMN IF NOT EXISTS version VARCHAR(20);
+
+CREATE INDEX IF NOT EXISTS idx_metric_specialty_id ON metric(specialty_id);
+CREATE INDEX IF NOT EXISTS idx_metric_question_code ON metric(question_code);
+CREATE INDEX IF NOT EXISTS idx_metric_active ON metric(active);
+```
+
+**Excel → Database Mapping**:
+```typescript
+// Excel columns → Database columns
+{
+  specialty: 'Ortho' → specialty (TEXT) // Display name
+  specialty_id: 'ORTHO' → specialty_id (VARCHAR) // Code
+  question_code: 'I25' → question_code (VARCHAR) // USNWR question
+  metric_name: 'In OR <18hrs...' → metric_name (TEXT)
+  priority: 1 → priority (INTEGER)
+  threshold_hours: 18 → threshold_hours (NUMERIC)
+  definition_window: 'start_time -> end_time' → definition_window (TEXT)
+  active: TRUE → active (BOOLEAN)
+  version: '0.0.1' → version (VARCHAR)
+  domain: 'timeliness' → domain (TEXT) // Measurement category
+  metric_id: 'ORTHO_I25' → metric_id (TEXT PRIMARY KEY)
+}
+```
+
+---
+
+### 1. SPECIALTY Table (Extracted from Excel)
+**Purpose**: Define available specialties (extracted from metric Excel data)
+
+**Extraction Logic**:
+```sql
+-- Extract from existing metric table after enhancement
+INSERT INTO specialty (specialty_code, specialty_name)
+SELECT DISTINCT specialty_id, specialty
+FROM metric
+WHERE active = TRUE
+ORDER BY specialty_id;
+```
 
 ```sql
 CREATE TABLE specialty (
-  specialty_code VARCHAR(50) PRIMARY KEY,  -- "ORTHO", "CARDIO", "NEURO"
-  specialty_name VARCHAR(255) NOT NULL,    -- "Orthopedics", "Cardiology"
-  display_order INTEGER DEFAULT 9999,
+  specialty_code VARCHAR(50) PRIMARY KEY,  -- "ORTHO", "CARDIOLOGY" from Excel
+  specialty_name VARCHAR(255) NOT NULL,    -- "Ortho", "Cardiology" from Excel
+  display_order INTEGER DEFAULT 9999,      -- Manual configuration
   icon_name VARCHAR(100),                  -- "bone", "heart", "brain"
   color_hex VARCHAR(7),                    -- "#007acc"
   description TEXT,
-  status VARCHAR(20) DEFAULT 'active',     -- "active", "deprecated"
+  status VARCHAR(20) DEFAULT 'active',
   created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
-**Example Data**:
+**Example Data** (extracted from Excel):
 ```json
 [
   {
-    "specialty_code": "ORTHO",
-    "specialty_name": "Orthopedics",
+    "specialty_code": "ORTHO",      // From Excel specialty_id
+    "specialty_name": "Ortho",      // From Excel specialty
     "display_order": 10,
     "icon_name": "bone",
     "color_hex": "#007acc",
-    "description": "Musculoskeletal conditions and procedures",
     "status": "active"
   },
   {
-    "specialty_code": "CARDIO",
-    "specialty_name": "Cardiology",
+    "specialty_code": "CARDIOLOGY",  // From Excel specialty_id
+    "specialty_name": "Cardiology",  // From Excel specialty
     "display_order": 20,
     "icon_name": "heart",
     "color_hex": "#d9534f",
-    "description": "Cardiac conditions and procedures",
     "status": "active"
   }
 ]
@@ -834,11 +901,15 @@ CREATE TABLE error_catalog (
 │     "case_id": "CS_2024_001234",                               │
 │     "metric": {                                                 │
 │       "metric_id": "ORTHO_I25",                                │
-│       "specialty": "Orthopedics",                              │
-│       "domain_question": "I25",  // Parsed from metric_id      │
+│       "specialty": "Ortho",        // From Excel specialty      │
+│       "specialty_id": "ORTHO",     // From Excel specialty_id   │
+│       "question_code": "I25",      // From Excel question_code  │
 │       "metric_name": "In OR <18h (Supracondylar)",            │
-│       "measurement_category": "timeliness",  // Optional field │
-│       "threshold_hours": 18                                    │
+│       "domain": "timeliness",      // Measurement category     │
+│       "threshold_hours": 18,                                    │
+│       "priority": 1,                                            │
+│       "active": true,                                           │
+│       "version": "0.0.1"                                        │
 │     },                                                          │
 │     "patient": {                                                │
 │       "patient_id": "P123456",                                 │
@@ -906,8 +977,9 @@ CREATE TABLE error_catalog (
 │   }                                                             │
 │                                                                 │
 │ Handshake:                                                      │
-│   specialty.specialty_code → metric.specialty → UI display     │
-│   metric.metric_id → parse to get USNWR domain question (e.g., I25) │
+│   metric.specialty_id → specialty.specialty_code → display name │
+│   metric.question_code → direct field (I25, not parsed!)       │
+│   metric.domain → measurement category display                 │
 │   signal_group + signal_def + enrichment_result.signals → chips │
 │   display_plan + provenance_rule + patient_payload → fields    │
 │   followup + enrichment_result.signals → active_questions      │
@@ -1054,10 +1126,12 @@ interface SuggestedMetricsResponse {
   case_type_code: string | null;
   suggested_metrics: Array<{
     metric_id: string;           // "ORTHO_I25"
-    metric_name: string;
-    domain_question: string;     // "I25" - parsed from metric_id
-    specialty: string;           // "ORTHO"
-    measurement_category?: string; // "timeliness" - optional
+    metric_name: string;         // "In OR <18 hrs – Supracondylar fracture"
+    specialty: string;           // "Ortho" (display name)
+    specialty_id: string;        // "ORTHO" (code)
+    question_code: string;       // "I25" (USNWR question)
+    domain: string;              // "timeliness" (measurement category)
+    priority: number;            // 1
     confidence: 'high' | 'medium' | 'low';
     match_reason: string;
     missing_fields: string[];
@@ -1118,11 +1192,15 @@ interface MetricCardResponse {
   case_id: string;
   metric: {
     metric_id: string;            // "ORTHO_I25"
-    specialty: string;            // "ORTHO"
-    domain_question: string;      // "I25" - USNWR question identifier
-    metric_name: string;
-    measurement_category?: string; // "timeliness" - optional
-    threshold_hours?: number;
+    specialty: string;            // "Ortho" (display name)
+    specialty_id: string;         // "ORTHO" (code)
+    question_code: string;        // "I25" (USNWR question identifier)
+    metric_name: string;          // "In OR <18 hrs – Supracondylar fracture"
+    domain: string;               // "timeliness" (measurement category)
+    priority: number;             // 1
+    threshold_hours?: number;     // 18
+    active: boolean;              // true
+    version: string;              // "0.0.1"
   };
   patient: {
     patient_id: string;
@@ -1486,12 +1564,20 @@ async function executeWithRetry(
 
 ## Implementation Plan
 
-### Phase 1: Metadata Tables (Week 1)
-- [ ] Create specialty, domain, case_type tables
+### Phase 0: Excel Schema Enhancement (Week 1, Part 1)
+- [ ] Add missing columns to metric table (specialty_id, question_code, priority, definition_window, active, version)
+- [ ] Update excelParser.ts MetricSchema to extract all columns
+- [ ] Update seed-metadata.ts to insert all columns
+- [ ] Re-run seeding to populate new columns
+- [ ] Verify data integrity
+
+### Phase 1: Metadata Tables (Week 1, Part 2)
+- [ ] Extract and create specialty table from metric data
+- [ ] Create case_type table with ICD-10/CPT mappings
 - [ ] Create metric_applicability table
 - [ ] Create case_status, case_record, case_metric_assignment tables
 - [ ] Create validation_rule, error_catalog tables
-- [ ] Seed initial data from Excel + manual entries
+- [ ] Seed initial data (specialty extracted, others manual)
 
 ### Phase 2: Case Classification Logic (Week 2)
 - [ ] Implement ICD-10 / CPT code → case_type matching
