@@ -21,6 +21,16 @@
 
 ## Gap Analysis Summary
 
+### Terminology Clarification
+
+**CRITICAL**: Understanding the domain concept
+- **Specialty**: The medical specialty (e.g., ORTHO = Orthopedics)
+- **Domain Question**: The USNWR question identifier (e.g., I25, S02, T01)
+- **metric_id Format**: `{SPECIALTY}_{DOMAIN_QUESTION}` (e.g., ORTHO_I25)
+  - ORTHO_I25 = Orthopedics, Domain Question I25 (Supracondylar fracture timeliness)
+  - ORTHO_S02 = Orthopedics, Domain Question S02 (Safety/complications)
+- **Note**: The existing "domain" field in the metric table (e.g., "timeliness") is a measurement category, NOT the domain question identifier. The domain question is embedded in the metric_id itself.
+
 ### Current State ✅
 - [x] Core metadata tables (metric, signal_group, signal_def, display_plan, followup, prompt, provenance_rule)
 - [x] Patient payload storage
@@ -32,16 +42,16 @@
 
 #### 1. **Taxonomy & Classification**
 - [ ] Specialty taxonomy (Ortho, Cardiology, Neurology, etc.)
-- [ ] Domain taxonomy (timeliness, safety, appropriateness, etc.)
 - [ ] Case type taxonomy (SCH, Hip Fracture, MI, Stroke, etc.)
 - [ ] Diagnosis code mapping (ICD-10 → case types)
 - [ ] Procedure code mapping (CPT → case types)
+- [ ] USNWR question taxonomy (I25, S02, T01, etc. - embedded in metric_id)
 
 #### 2. **Metric Selection & Applicability**
 - [ ] Metric applicability rules (age, diagnosis, procedure requirements)
 - [ ] Inclusion/exclusion criteria
-- [ ] Metric-to-specialty mapping
-- [ ] Metric-to-domain mapping
+- [ ] Metric-to-specialty mapping (already exists in metric.specialty field)
+- [ ] Metric-to-case-type mapping (which USNWR questions apply to which case types)
 - [ ] Active version tracking
 
 #### 3. **API Contracts**
@@ -114,58 +124,7 @@ CREATE TABLE specialty (
 
 ---
 
-### 2. DOMAIN Table
-**Purpose**: Define quality measurement domains
-
-```sql
-CREATE TABLE domain (
-  domain_code VARCHAR(50) PRIMARY KEY,     -- "timeliness", "safety", "appropriateness"
-  domain_name VARCHAR(255) NOT NULL,       -- "Timeliness", "Safety"
-  display_order INTEGER DEFAULT 9999,
-  icon_name VARCHAR(100),                  -- "clock", "shield", "check-circle"
-  color_hex VARCHAR(7),
-  description TEXT,
-  status VARCHAR(20) DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-**Example Data**:
-```json
-[
-  {
-    "domain_code": "timeliness",
-    "domain_name": "Timeliness",
-    "display_order": 10,
-    "icon_name": "clock",
-    "color_hex": "#e0a800",
-    "description": "Time-to-intervention metrics",
-    "status": "active"
-  },
-  {
-    "domain_code": "safety",
-    "domain_name": "Safety",
-    "display_order": 20,
-    "icon_name": "shield",
-    "color_hex": "#28a745",
-    "description": "Patient safety and complications",
-    "status": "active"
-  },
-  {
-    "domain_code": "appropriateness",
-    "domain_name": "Appropriateness",
-    "display_order": 30,
-    "icon_name": "check-circle",
-    "color_hex": "#17a2b8",
-    "description": "Clinical appropriateness and guideline adherence",
-    "status": "active"
-  }
-]
-```
-
----
-
-### 3. CASE_TYPE Table
+### 2. CASE_TYPE Table
 **Purpose**: Define case type taxonomy (the "what" being measured)
 
 ```sql
@@ -213,7 +172,7 @@ CREATE TABLE case_type (
 
 ---
 
-### 4. METRIC_APPLICABILITY Table
+### 3. METRIC_APPLICABILITY Table
 **Purpose**: Define when a metric applies to a case
 
 ```sql
@@ -264,7 +223,7 @@ CREATE TABLE metric_applicability (
 
 ---
 
-### 5. CASE_STATUS Table
+### 4. CASE_STATUS Table
 **Purpose**: Track case processing state
 
 ```sql
@@ -335,7 +294,7 @@ CREATE TABLE case_status (
 
 ---
 
-### 6. CASE Table (Enhanced)
+### 5. CASE Table (Enhanced)
 **Purpose**: Central case tracking with state
 
 ```sql
@@ -374,7 +333,7 @@ CREATE TABLE case_record (
 
 ---
 
-### 7. CASE_METRIC_ASSIGNMENT Table
+### 6. CASE_METRIC_ASSIGNMENT Table
 **Purpose**: Track which metrics are assigned to a case
 
 ```sql
@@ -410,7 +369,7 @@ CREATE TABLE case_metric_assignment (
 
 ---
 
-### 8. VALIDATION_RULE Table
+### 7. VALIDATION_RULE Table
 **Purpose**: Define payload validation rules
 
 ```sql
@@ -473,7 +432,7 @@ CREATE TABLE validation_rule (
 
 ---
 
-### 9. ERROR_CATALOG Table
+### 8. ERROR_CATALOG Table
 **Purpose**: Standardized error definitions
 
 ```sql
@@ -834,9 +793,8 @@ CREATE TABLE error_catalog (
 │                                                                 │
 │   2. If cache miss, fetch all metadata (SINGLE QUERY):         │
 │      SELECT                                                     │
-│        m.*,                    -- metric                        │
-│        s.specialty_name,       -- specialty                     │
-│        d.domain_name,          -- domain                        │
+│        m.*,                    -- metric (includes specialty)   │
+│        s.specialty_name,       -- specialty full name           │
 │        sg.*,                   -- signal_group                  │
 │        sd.*,                   -- signal_def                    │
 │        dp.*,                   -- display_plan                  │
@@ -849,7 +807,6 @@ CREATE TABLE error_catalog (
 │        cma.*                   -- case_metric_assignment        │
 │      FROM metric m                                              │
 │      JOIN specialty s ON s.specialty_code = m.specialty        │
-│      JOIN domain d ON d.domain_code = m.domain                 │
 │      LEFT JOIN signal_group sg ON sg.metric_id = m.metric_id   │
 │      LEFT JOIN signal_def sd ON sd.metric_id = m.metric_id     │
 │      LEFT JOIN display_plan dp ON dp.metric_id = m.metric_id   │
@@ -878,8 +835,9 @@ CREATE TABLE error_catalog (
 │     "metric": {                                                 │
 │       "metric_id": "ORTHO_I25",                                │
 │       "specialty": "Orthopedics",                              │
-│       "domain": "Timeliness",                                  │
+│       "domain_question": "I25",  // Parsed from metric_id      │
 │       "metric_name": "In OR <18h (Supracondylar)",            │
+│       "measurement_category": "timeliness",  // Optional field │
 │       "threshold_hours": 18                                    │
 │     },                                                          │
 │     "patient": {                                                │
@@ -948,8 +906,8 @@ CREATE TABLE error_catalog (
 │   }                                                             │
 │                                                                 │
 │ Handshake:                                                      │
-│   specialty.specialty_code → metric.specialty → display        │
-│   domain.domain_code → metric.domain → display                 │
+│   specialty.specialty_code → metric.specialty → UI display     │
+│   metric.metric_id → parse to get USNWR domain question (e.g., I25) │
 │   signal_group + signal_def + enrichment_result.signals → chips │
 │   display_plan + provenance_rule + patient_payload → fields    │
 │   followup + enrichment_result.signals → active_questions      │
@@ -1095,10 +1053,11 @@ interface SuggestedMetricsResponse {
   case_id: string;
   case_type_code: string | null;
   suggested_metrics: Array<{
-    metric_id: string;
+    metric_id: string;           // "ORTHO_I25"
     metric_name: string;
-    domain: string;
-    specialty: string;
+    domain_question: string;     // "I25" - parsed from metric_id
+    specialty: string;           // "ORTHO"
+    measurement_category?: string; // "timeliness" - optional
     confidence: 'high' | 'medium' | 'low';
     match_reason: string;
     missing_fields: string[];
@@ -1158,10 +1117,11 @@ interface AssignMetricsResponse {
 interface MetricCardResponse {
   case_id: string;
   metric: {
-    metric_id: string;
-    specialty: string;
-    domain: string;
+    metric_id: string;            // "ORTHO_I25"
+    specialty: string;            // "ORTHO"
+    domain_question: string;      // "I25" - USNWR question identifier
     metric_name: string;
+    measurement_category?: string; // "timeliness" - optional
     threshold_hours?: number;
   };
   patient: {
@@ -1552,9 +1512,10 @@ async function executeWithRetry(
 - [ ] Add monitoring and alerting
 
 ### Phase 5: UI Integration (Week 4)
-- [ ] Update frontend to use new specialty/domain endpoints
-- [ ] Implement metric selection flow
-- [ ] Add case state indicators
+- [ ] Update frontend to use new specialty taxonomy
+- [ ] Implement metric selection flow with suggested metrics
+- [ ] Add case state indicators (draft → enriching → enriched → reviewed)
+- [ ] Parse domain_question from metric_id for display
 - [ ] Add error display components
 
 ### Phase 6: Testing & Validation (Week 5)
