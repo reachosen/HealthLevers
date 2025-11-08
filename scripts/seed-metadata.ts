@@ -24,7 +24,13 @@ import {
   promptBind,
 } from '../shared/schema';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { sql } from 'drizzle-orm';
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 async function seedMetadata() {
   console.log('🌱 Starting v9.2 Metadata Seeding\n');
