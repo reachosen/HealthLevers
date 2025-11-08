@@ -7,6 +7,7 @@
  * Ensures database is properly set up and accessible.
  */
 
+import 'dotenv/config';
 import { db } from '../server/db';
 import {
   // Configuration tables

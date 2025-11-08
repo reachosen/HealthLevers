@@ -10,6 +10,7 @@
  * - Transactional (all-or-nothing)
  */
 
+import 'dotenv/config';
 import { db } from '../server/db';
 import { excelParser } from '../server/services/excelParser';
 import {
