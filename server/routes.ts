@@ -8,7 +8,7 @@ import { testCaseSchema } from "@shared/schema";
 import { z } from "zod";
 import { asyncHandler } from "./lib/asyncHandler";
 import OpenAI from "openai";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./placeholderAuth";
 import { promptStore } from "./promptStore";
 import { validateRequest, logPromptUsage } from "../shared/promptRouting";
 import metadataRoutes from "./routes/metadata";

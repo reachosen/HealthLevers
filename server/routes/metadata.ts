@@ -22,7 +22,7 @@ import {
   prompt,
 } from '../../shared/schema';
 import { eq, inArray } from 'drizzle-orm';
-import { isAuthenticated } from '../replitAuth';
+import { isAuthenticated } from '../placeholderAuth';
 
 const router = Router();
 
