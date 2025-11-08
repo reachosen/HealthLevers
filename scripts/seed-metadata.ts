@@ -100,6 +100,15 @@ async function seedMetadata() {
         domain: m.domain || null,
         thresholdHours: m.threshold_hours ? String(m.threshold_hours) : null,
         contentVersion: m.content_version || null,
+      }).onConflictDoUpdate({
+        target: metric.metricId,
+        set: {
+          specialty: m.specialty,
+          metricName: m.metric_name,
+          domain: m.domain || null,
+          thresholdHours: m.threshold_hours ? String(m.threshold_hours) : null,
+          contentVersion: m.content_version || null,
+        }
       });
     }
     console.log(`   ✅ Inserted ${data.metrics.length} metrics`);
@@ -111,6 +120,11 @@ async function seedMetadata() {
         metricId: g.metric_id,
         groupId: g.group_id,
         groupCode: g.group_code,
+      }).onConflictDoUpdate({
+        target: [signalGroup.metricId, signalGroup.groupId],
+        set: {
+          groupCode: g.group_code,
+        }
       });
     }
     console.log(`   ✅ Inserted ${data.signalGroups.length} signal groups`);
@@ -124,6 +138,13 @@ async function seedMetadata() {
         groupId: s.group_id || null,
         severity: s.severity || null,
         status: s.status || null,
+      }).onConflictDoUpdate({
+        target: [signalDef.metricId, signalDef.signalCode],
+        set: {
+          groupId: s.group_id || null,
+          severity: s.severity || null,
+          status: s.status || null,
+        }
       });
     }
     console.log(`   ✅ Inserted ${data.signalDefs.length} signal definitions`);
@@ -137,6 +158,13 @@ async function seedMetadata() {
         whenCond: f.when_cond || null,
         questionText: f.question_text,
         responseType: f.response_type || null,
+      }).onConflictDoUpdate({
+        target: [followup.metricId, followup.followupId],
+        set: {
+          whenCond: f.when_cond || null,
+          questionText: f.question_text,
+          responseType: f.response_type || null,
+        }
       });
     }
     console.log(`   ✅ Inserted ${data.followups.length} followup questions`);
@@ -167,6 +195,14 @@ async function seedMetadata() {
         tier: d.tier || null,
         visibilityCond: d.visibility_cond || null,
         orderNbr: orderNbr,
+      }).onConflictDoUpdate({
+        target: [displayPlan.metricId, displayPlan.fieldName],
+        set: {
+          label: label,
+          tier: d.tier || null,
+          visibilityCond: d.visibility_cond || null,
+          orderNbr: orderNbr,
+        }
       });
     }
     console.log(`   ✅ Inserted ${data.displayPlans.length} display plan entries`);
@@ -181,6 +217,14 @@ async function seedMetadata() {
         keyName: p.key_name || null,
         fieldRef: p.field_ref || null,
         fallbackJson: p.fallback_json || null,
+      }).onConflictDoUpdate({
+        target: [provenanceRule.metricId, provenanceRule.fieldName],
+        set: {
+          tableName: p.table_name || null,
+          keyName: p.key_name || null,
+          fieldRef: p.field_ref || null,
+          fallbackJson: p.fallback_json || null,
+        }
       });
     }
     console.log(`   ✅ Inserted ${data.provenanceRules.length} provenance rules`);
@@ -199,6 +243,18 @@ async function seedMetadata() {
         classifier2: pr.classifier_2 || null,
         contentVersion: pr.content_version || null,
         lastChangedAt: pr.last_changed_at ? new Date(pr.last_changed_at) : null,
+      }).onConflictDoUpdate({
+        target: [prompt.metricId, prompt.promptType],
+        set: {
+          persona: pr.persona || null,
+          purpose: pr.purpose || null,
+          description: pr.description || null,
+          promptText: pr.prompt_text,
+          classifier1: pr.classifier_1 || null,
+          classifier2: pr.classifier_2 || null,
+          contentVersion: pr.content_version || null,
+          lastChangedAt: pr.last_changed_at ? new Date(pr.last_changed_at) : null,
+        }
       });
     }
     console.log(`   ✅ Inserted ${data.prompts.length} prompts`);
