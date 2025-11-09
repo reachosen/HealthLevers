@@ -7,12 +7,13 @@ import { PlanningProvider } from "@/lib/planningConfig";
 import { PromptPlayProvider, PromptPlayDrawer } from "@/components/PromptPlay";
 
 import { useAuth } from "@/hooks/useAuth";
-import Dashboard from "@/pages/dashboard";
+import CaseQueue from "@/pages/case-queue";
 import Landing from "@/pages/Landing";
 import NotFound from "@/pages/not-found";
 import Navbar from "@/components/Navbar";
 import PromptStorePage from "@/pages/promptstore";
 import ReviewWorkbench from "@/pages/review-workbench";
+import Dashboard from "@/pages/dashboard"; // Keep for /metrics route later
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -43,8 +44,9 @@ function Router() {
       <Navbar />
 
       <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/review-workbench" component={ReviewWorkbench} />
+        <Route path="/" component={CaseQueue} />
+        <Route path="/case/:id" component={ReviewWorkbench} />
+        <Route path="/metrics" component={Dashboard} />
         <Route path="/promptstore" component={PromptStorePage} />
         <Route component={NotFound} />
       </Switch>

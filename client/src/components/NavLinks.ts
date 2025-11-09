@@ -5,7 +5,7 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: NavLink[] = [
-  { href: "/", label: "Home" },
-  { href: "/review-workbench", label: "🤖 AI Review Workbench" },
-  { href: "/promptstore", label: "Settings" },
+  { href: "/", label: "📋 Queue" },
+  { href: "/metrics", label: "📊 Metrics" },
+  { href: "/promptstore", label: "⚙️ Config" },
 ];
