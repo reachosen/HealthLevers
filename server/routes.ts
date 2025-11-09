@@ -1108,16 +1108,161 @@ Keep responses concise but informative.`;
     return { rules, metrics, sqlSignals };
   }
 
-  // Apply SCH validation and return enhanced response  
+  // Apply SCH validation and return enhanced response
   function applySCHValidation(patientData: any, baseResponse: any) {
     const validation = validateSCHTimeliness(patientData);
-    
+
     return {
       ...baseResponse,
       metrics: { ...baseResponse.metrics, ...validation.metrics },
       signals: [...(baseResponse.signals || []), ...validation.sqlSignals]
     };
   }
+
+  // ============================================================================
+  // Case Review Preparation API (AI-Powered Clinical Reasoning)
+  // ============================================================================
+
+  /**
+   * POST /api/cases/:caseId/prepare-review
+   *
+   * Prepare a complete case review package including:
+   * - AI-generated clinical summary (critical 20%)
+   * - Dynamic reasoning questions (Rule In/Out/Insight)
+   * - Grouped signals
+   */
+  app.post("/api/cases/:caseId/prepare-review", isAuthenticated, asyncHandler(async (req, res) => {
+    const { caseId } = req.params;
+    const { encounterPayload, metricContext, signals } = req.body;
+
+    if (!encounterPayload || !metricContext) {
+      return res.status(400).json({
+        message: "Missing required fields: encounterPayload, metricContext"
+      });
+    }
+
+    try {
+      // Import the case review preparer service
+      const { caseReviewPreparer } = await import('./services/caseReviewPreparer');
+
+      // Prepare the complete review package
+      const reviewPackage = await caseReviewPreparer.prepareCase(
+        caseId,
+        encounterPayload,
+        metricContext,
+        signals || []
+      );
+
+      res.json(reviewPackage);
+    } catch (error: any) {
+      console.error('Error preparing case review:', error);
+      res.status(500).json({
+        message: "Failed to prepare case review",
+        error: error.message
+      });
+    }
+  }));
+
+  /**
+   * POST /api/cases/:caseId/generate-summary
+   *
+   * Generate just the clinical summary for a case
+   */
+  app.post("/api/cases/:caseId/generate-summary", isAuthenticated, asyncHandler(async (req, res) => {
+    const { caseId } = req.params;
+    const { encounterPayload, metricContext } = req.body;
+
+    if (!encounterPayload || !metricContext) {
+      return res.status(400).json({
+        message: "Missing required fields: encounterPayload, metricContext"
+      });
+    }
+
+    try {
+      const { clinicalSummaryGenerator } = await import('./services/clinicalSummaryGenerator');
+
+      const summary = await clinicalSummaryGenerator.generateSummary(
+        encounterPayload,
+        metricContext
+      );
+
+      res.json({ caseId, summary });
+    } catch (error: any) {
+      console.error('Error generating clinical summary:', error);
+      res.status(500).json({
+        message: "Failed to generate clinical summary",
+        error: error.message
+      });
+    }
+  }));
+
+  /**
+   * POST /api/cases/:caseId/generate-questions
+   *
+   * Generate reasoning questions for a case
+   */
+  app.post("/api/cases/:caseId/generate-questions", isAuthenticated, asyncHandler(async (req, res) => {
+    const { caseId } = req.params;
+    const { encounterPayload, signals, metricId, focusArea } = req.body;
+
+    if (!encounterPayload || !metricId) {
+      return res.status(400).json({
+        message: "Missing required fields: encounterPayload, metricId"
+      });
+    }
+
+    try {
+      const { reasoningQuestionGenerator } = await import('./services/reasoningQuestionGenerator');
+
+      const questions = await reasoningQuestionGenerator.generateQuestions(
+        encounterPayload,
+        signals || [],
+        metricId
+      );
+
+      res.json({ caseId, questions });
+    } catch (error: any) {
+      console.error('Error generating reasoning questions:', error);
+      res.status(500).json({
+        message: "Failed to generate reasoning questions",
+        error: error.message
+      });
+    }
+  }));
+
+  /**
+   * POST /api/cases/:caseId/quick-preview
+   *
+   * Generate a quick preview summary (one-liner)
+   */
+  app.post("/api/cases/:caseId/quick-preview", isAuthenticated, asyncHandler(async (req, res) => {
+    const { caseId } = req.params;
+    const { encounterPayload, metricContext } = req.body;
+
+    if (!encounterPayload || !metricContext) {
+      return res.status(400).json({
+        message: "Missing required fields: encounterPayload, metricContext"
+      });
+    }
+
+    try {
+      const { caseReviewPreparer } = await import('./services/caseReviewPreparer');
+
+      const preview = await caseReviewPreparer.prepareQuickPreview(
+        caseId,
+        encounterPayload,
+        metricContext
+      );
+
+      res.json(preview);
+    } catch (error: any) {
+      console.error('Error generating quick preview:', error);
+      res.status(500).json({
+        message: "Failed to generate quick preview",
+        error: error.message
+      });
+    }
+  }));
 
   const httpServer = createServer(app);
   return httpServer;
