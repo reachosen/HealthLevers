@@ -1,10 +1,8 @@
 /**
  * Dashboard - New Main Landing Page
- *
- * Clean, modern dashboard for AI-powered clinical abstraction
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,25 +11,27 @@ import {
   Sparkles,
   Clock,
   TrendingUp,
-  FileText,
+  Brain,
   ArrowRight,
   Zap,
   CheckCircle2,
-  Brain,
   Target
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
-  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <Navbar />
 
       <div className="container mx-auto px-6 py-12 max-w-7xl">
+        {/* Diagnostic Banner */}
+        <div className="bg-green-500 text-white p-4 rounded-lg mb-8 text-center font-bold text-xl">
+          ✅ NEW DASHBOARD LOADED SUCCESSFULLY! ✅
+        </div>
+
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-6">
@@ -125,38 +125,35 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="grid md:grid-cols-3 gap-8">
-              {/* Layer 1 */}
               <div className="text-center">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-blue-600">1</span>
                 </div>
                 <h3 className="font-semibold text-lg mb-2">📊 Clinical Summary</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  AI extracts critical 20%: Patient, Presentation, Assessment, Timeline, Key Considerations
+                  AI extracts critical 20%: Patient, Presentation, Assessment, Timeline
                 </p>
                 <Badge variant="secondary">10 seconds to read</Badge>
               </div>
 
-              {/* Layer 2 */}
               <div className="text-center">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-green-600">2</span>
                 </div>
                 <h3 className="font-semibold text-lg mb-2">🤖 Reasoning Questions</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Dynamic questions guide you: Rule In (include?), Rule Out (exclude?), Clinical Insight
+                  Dynamic questions: Rule In, Rule Out, Clinical Insight
                 </p>
                 <Badge variant="secondary">3-4 minutes</Badge>
               </div>
 
-              {/* Layer 3 */}
               <div className="text-center">
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-purple-600">3</span>
                 </div>
                 <h3 className="font-semibold text-lg mb-2">⚖️ Final Decision</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Review evidence, make judgment, submit with confidence - you're in control
+                  Review evidence, make judgment, submit with confidence
                 </p>
                 <Badge variant="secondary">1-2 minutes</Badge>
               </div>
@@ -169,7 +166,6 @@ export default function Dashboard() {
                   <p className="font-medium text-green-900 mb-1">Evidence-Based Every Step</p>
                   <p className="text-sm text-green-700">
                     Every summary point and question is backed by citations to specific JSON paths
-                    in the encounter data. Full transparency, full traceability.
                   </p>
                 </div>
               </div>
@@ -178,7 +174,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Quick Start */}
-        <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 mb-12">
           <CardHeader>
             <CardTitle className="text-2xl flex items-center gap-2">
               <Target className="h-6 w-6 text-blue-600" />
@@ -192,9 +188,9 @@ export default function Dashboard() {
                   1
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-medium mb-1">Click "Start AI Review"</h4>
+                  <h4 className="font-medium mb-1">Click "Launch AI Review Workbench"</h4>
                   <p className="text-sm text-gray-600">
-                    The workbench will load with a sample supracondylar fracture case (ORTHO_I25)
+                    Load with a sample supracondylar fracture case (ORTHO_I25)
                   </p>
                 </div>
               </div>
@@ -206,7 +202,7 @@ export default function Dashboard() {
                 <div className="flex-1">
                   <h4 className="font-medium mb-1">Review AI-Generated Summary</h4>
                   <p className="text-sm text-gray-600">
-                    Read the clinical summary - 6yo with SCH fracture, 8.5hr to OR, NPO delay justified
+                    6yo with SCH fracture, 8.5hr to OR, NPO delay justified
                   </p>
                 </div>
               </div>
@@ -218,7 +214,7 @@ export default function Dashboard() {
                 <div className="flex-1">
                   <h4 className="font-medium mb-1">Answer Reasoning Questions</h4>
                   <p className="text-sm text-gray-600">
-                    Guide through inclusion, exclusion, and clinical insight questions with AI suggestions
+                    Guide through inclusion, exclusion, and clinical insight questions
                   </p>
                 </div>
               </div>
@@ -230,7 +226,7 @@ export default function Dashboard() {
                 <div className="flex-1">
                   <h4 className="font-medium mb-1">Make Final Decision & Submit</h4>
                   <p className="text-sm text-gray-600">
-                    Include/Exclude the case, add notes, and submit your abstraction
+                    Include/Exclude the case, add notes, and submit
                   </p>
                 </div>
               </div>
@@ -242,7 +238,7 @@ export default function Dashboard() {
                   className="w-full gap-2 text-lg py-6 bg-blue-600 hover:bg-blue-700"
                 >
                   <Sparkles className="h-5 w-5" />
-                  Launch AI Review Workbench
+                  Launch AI Review Workbench Now
                   <ArrowRight className="h-5 w-5" />
                 </Button>
               </div>
@@ -250,8 +246,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Stats Footer */}
-        <div className="grid md:grid-cols-4 gap-4 mt-12">
+        {/* Stats */}
+        <div className="grid md:grid-cols-4 gap-4">
           <Card className="text-center">
             <CardContent className="pt-6">
               <div className="text-3xl font-bold text-blue-600 mb-1">5-7min</div>
