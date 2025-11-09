@@ -52,21 +52,11 @@ export default function Dashboard() {
             <Button
               size="lg"
               onClick={() => navigate('/review-workbench')}
-              className="gap-2 text-lg px-8 py-6 bg-blue-600 hover:bg-blue-700"
+              className="gap-2 text-lg px-8 py-6 bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all"
             >
               <Brain className="h-5 w-5" />
-              Start AI Review
+              Launch AI Review Workbench
               <ArrowRight className="h-5 w-5" />
-            </Button>
-
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate('/intake')}
-              className="gap-2 text-lg px-8 py-6"
-            >
-              <FileText className="h-5 w-5" />
-              Manual Intake
             </Button>
           </div>
         </div>
