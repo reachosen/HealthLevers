@@ -1,461 +1,449 @@
 /**
  * Case Queue - Main Landing Page
- *
- * Shows pending cases waiting for abstraction
- * Clinician workflow: Pick a case → Start AI Review → Submit → Next
+ * Beautiful Lurie Children's Hospital branded design from v0
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Clock,
-  User,
-  AlertCircle,
-  CheckCircle2,
-  FileText,
-  TrendingUp,
-  Play
-} from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Play, Clock, User, FileText, Calendar, TrendingUp } from 'lucide-react';
 
-// Sample pending cases (in production, this would come from API)
+// Sample pending cases
 const SAMPLE_CASES = [
   {
     id: 'case_sch_001',
     mrn: '12345-67',
-    patientName: 'Patient A',
     age: 6,
-    metricId: 'ORTHO_I25',
-    metricName: 'SCH Fracture < 18 hrs',
     metricCode: 'I25',
+    metricName: 'SCH Fracture < 18 hrs',
     domain: 'Timeliness',
     priority: 'high',
-    arrivedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    arrivedAt: '2h ago',
     estimatedTime: '~7 min',
-    specialty: 'Orthopedics'
-  },
-  {
-    id: 'case_ssi_002',
-    mrn: '23456-78',
-    patientName: 'Patient B',
-    age: 45,
-    metricId: 'ORTHO_S12',
-    metricName: 'SSI Assessment',
-    metricCode: 'S12',
-    domain: 'Safety',
-    priority: 'normal',
-    arrivedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-    estimatedTime: '~5 min',
-    specialty: 'Orthopedics'
-  },
-  {
-    id: 'case_rto_003',
-    mrn: '34567-89',
-    patientName: 'Patient C',
-    age: 32,
-    metricId: 'ORTHO_O21',
-    metricName: 'Unplanned Return to OR',
-    metricCode: 'O21',
-    domain: 'Outcomes',
-    priority: 'normal',
-    arrivedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    estimatedTime: '~6 min',
-    specialty: 'Orthopedics'
+    borderColor: 'border-l-red-500',
+    badgeVariant: 'secondary',
+    badgeClass: 'bg-red-50 text-red-700 border-red-200',
+    timeClass: 'text-red-600',
+    timeIconClass: 'text-red-500'
   },
   {
     id: 'case_openfx_004',
     mrn: '45678-90',
-    patientName: 'Patient D',
     age: 28,
-    metricId: 'ORTHO_I26',
-    metricName: 'Open Fracture < 24 hrs',
     metricCode: 'I26',
+    metricName: 'Open Fracture < 24 hrs',
     domain: 'Timeliness',
     priority: 'high',
-    arrivedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+    arrivedAt: '4h ago',
     estimatedTime: '~8 min',
-    specialty: 'Orthopedics'
-  }
-];
-
-// Sample draft cases (auto-saved in progress)
-const SAMPLE_DRAFTS = [
+    borderColor: 'border-l-red-500',
+    badgeVariant: 'secondary',
+    badgeClass: 'bg-orange-50 text-orange-700 border-orange-200',
+    timeClass: 'text-orange-600',
+    timeIconClass: 'text-orange-500'
+  },
   {
-    id: 'case_draft_001',
-    mrn: '56789-01',
-    metricName: 'SCH Fracture < 18 hrs',
-    metricCode: 'I25',
-    startedAt: new Date(Date.now() - 45 * 60 * 1000), // 45 min ago
-    progress: 60
+    id: 'case_ssi_002',
+    mrn: '23456-78',
+    age: 45,
+    metricCode: 'S12',
+    metricName: 'SSI Assessment',
+    domain: 'Safety',
+    priority: 'normal',
+    arrivedAt: '1d ago',
+    estimatedTime: '~5 min',
+    borderColor: 'border-l-blue-500',
+    badgeVariant: 'secondary',
+    badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
+    timeClass: 'text-blue-600',
+    timeIconClass: 'text-blue-500'
+  },
+  {
+    id: 'case_rto_003',
+    mrn: '34567-89',
+    age: 32,
+    metricCode: 'O21',
+    metricName: 'Unplanned Return to OR',
+    domain: 'Outcomes',
+    priority: 'normal',
+    arrivedAt: '3d ago',
+    estimatedTime: '~6 min',
+    borderColor: 'border-l-blue-500',
+    badgeVariant: 'secondary',
+    badgeClass: 'bg-teal-50 text-teal-700 border-teal-200',
+    timeClass: 'text-teal-600',
+    timeIconClass: 'text-teal-500'
   }
 ];
 
-// Today's completed cases
-const COMPLETED_TODAY = {
-  count: 8,
-  totalMinutes: 62,
-  avgMinutes: 7.8
+const SAMPLE_DRAFT = {
+  id: 'case_draft_001',
+  mrn: '56789-01',
+  metricCode: 'I25',
+  metricName: 'SCH Fracture < 18 hrs',
+  startedAt: '45m ago',
+  progress: 60
 };
 
 export default function CaseQueue() {
   const [, navigate] = useLocation();
-  const [selectedSpecialty, setSelectedSpecialty] = useState('Orthopedics');
-  const [filterDomain, setFilterDomain] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const { user } = useAuth();
+  const [specialty, setSpecialty] = useState('Orthopedics');
+  const [domain, setDomain] = useState('All Domains');
+  const [priority, setPriority] = useState('All Priorities');
 
-  const filteredCases = SAMPLE_CASES.filter(c => {
-    if (filterDomain !== 'all' && c.domain !== filterDomain) return false;
-    if (filterPriority !== 'all' && c.priority !== filterPriority) return false;
-    return true;
-  });
+  const stats = {
+    completed: 8,
+    minutes: 62,
+    avgTime: 7.8,
+  };
 
-  const highPriorityCases = filteredCases.filter(c => c.priority === 'high');
-  const normalPriorityCases = filteredCases.filter(c => c.priority === 'normal');
-
-  const totalEstimatedMinutes = filteredCases.reduce((sum, c) => {
-    const mins = parseInt(c.estimatedTime.replace(/[^0-9]/g, ''));
-    return sum + mins;
+  const highPriorityCases = SAMPLE_CASES.filter(c => c.priority === 'high');
+  const normalPriorityCases = SAMPLE_CASES.filter(c => c.priority === 'normal');
+  const totalEstimatedMinutes = SAMPLE_CASES.reduce((sum, c) => {
+    return sum + parseInt(c.estimatedTime.replace(/[^0-9]/g, ''));
   }, 0);
 
-  const formatTimeAgo = (date: Date) => {
-    const hours = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60));
-    if (hours < 1) {
-      const mins = Math.floor((Date.now() - date.getTime()) / (1000 * 60));
-      return `${mins}m ago`;
-    }
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'destructive';
-      case 'normal': return 'secondary';
-      default: return 'outline';
-    }
-  };
-
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'high': return '🔴';
-      case 'normal': return '🟡';
-      default: return '⚪';
-    }
+  const getUserName = () => {
+    if (!user) return 'User';
+    const firstName = (user as any)?.firstName;
+    const lastName = (user as any)?.lastName;
+    if (firstName && lastName) return `${firstName} ${lastName}`;
+    if (firstName) return firstName;
+    return 'Local Developer';
   };
 
   const startReview = (caseId: string) => {
     navigate(`/case/${caseId}`);
   };
 
-  const resumeDraft = (caseId: string) => {
-    navigate(`/case/${caseId}`);
-  };
-
-  const discardDraft = (caseId: string) => {
-    // In production, this would delete the draft from storage
-    console.log('Discard draft:', caseId);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="container mx-auto p-6 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">📋 Abstraction Queue</h1>
-              <p className="text-muted-foreground mt-1">
-                AI-assisted case review for {selectedSpecialty}
-              </p>
-            </div>
-
-            {/* Specialty Selector */}
-            <div className="flex items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Specialty:</label>
-              <select
-                value={selectedSpecialty}
-                onChange={(e) => setSelectedSpecialty(e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm bg-white"
-              >
-                <option value="Orthopedics">Orthopedics</option>
-                <option value="Cardiology">Cardiology</option>
-                <option value="Neurosurgery">Neurosurgery</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Filters & Stats */}
-          <div className="flex items-center justify-between bg-white rounded-lg border p-4">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-600">Domain:</label>
-                <select
-                  value={filterDomain}
-                  onChange={(e) => setFilterDomain(e.target.value)}
-                  className="rounded border border-gray-300 px-2 py-1 text-sm"
-                >
-                  <option value="all">All Domains</option>
-                  <option value="Timeliness">Timeliness</option>
-                  <option value="Safety">Safety</option>
-                  <option value="Outcomes">Outcomes</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-600">Priority:</label>
-                <select
-                  value={filterPriority}
-                  onChange={(e) => setFilterPriority(e.target.value)}
-                  className="rounded border border-gray-300 px-2 py-1 text-sm"
-                >
-                  <option value="all">All Priorities</option>
-                  <option value="high">High Only</option>
-                  <option value="normal">Normal Only</option>
-                </select>
-              </div>
-            </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-lurie-cream via-background to-lurie-sky">
+      {/* Header */}
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-border/40 shadow-sm">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
-              <div className="text-sm">
-                <span className="font-semibold text-gray-900">{filteredCases.length}</span>
-                <span className="text-gray-600"> cases pending</span>
+              {/* Lurie Logo */}
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-xl bg-lurie-purple flex items-center justify-center shadow-md">
+                  <svg viewBox="0 0 24 24" className="h-7 w-7 text-white" fill="currentColor">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+                    <path d="M10 17l-3-3 1.41-1.41L10 14.17l5.59-5.58L17 10l-7 7z" fill="white" />
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-foreground">Lurie Children's</h1>
+                  <p className="text-sm text-muted-foreground">Clinical Case Review Helper</p>
+                </div>
               </div>
-              <div className="text-sm">
-                <Clock className="inline h-4 w-4 mr-1 text-blue-600" />
-                <span className="font-semibold text-gray-900">~{totalEstimatedMinutes} min</span>
-                <span className="text-gray-600"> estimated</span>
-              </div>
+
+              <nav className="hidden md:flex items-center gap-1 ml-6">
+                <Button variant="ghost" size="sm" className="text-lurie-purple font-medium">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Queue
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/metrics')}>
+                  Metrics
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/promptstore')}>
+                  Config
+                </Button>
+              </nav>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted-foreground hidden md:inline">
+                Welcome {getUserName()}
+              </span>
+              <Select value={specialty} onValueChange={setSpecialty}>
+                <SelectTrigger className="w-[180px] bg-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Orthopedics">Orthopedics</SelectItem>
+                  <SelectItem value="Cardiology">Cardiology</SelectItem>
+                  <SelectItem value="Neurology">Neurology</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={() => navigate('/api/logout')}>
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* High Priority Cases */}
-        {highPriorityCases.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              🔴 HIGH PRIORITY
-              <Badge variant="destructive">{highPriorityCases.length}</Badge>
-            </h2>
-            <div className="space-y-3">
-              {highPriorityCases.map((c) => (
-                <Card key={c.id} className="border-l-4 border-l-red-500 hover:shadow-lg transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-lg text-gray-900">
-                            MRN: {c.mrn}
-                          </h3>
-                          <Badge variant="outline">{c.metricCode}</Badge>
-                          <span className="text-sm text-gray-600">{c.metricName}</span>
-                        </div>
-
-                        <div className="flex items-center gap-6 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            <span>{c.age}yo</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <FileText className="h-4 w-4" />
-                            <span>{c.domain}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span>Arrived: {formatTimeAgo(c.arrivedAt)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-4 w-4" />
-                            <span>Est. Time: {c.estimatedTime}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <Button
-                        onClick={() => startReview(c.id)}
-                        className="gap-2 bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Play className="h-4 w-4" />
-                        Start AI Review
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+      <main className="container mx-auto px-6 py-8 max-w-7xl">
+        {/* Page Title & Stats */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-bold text-foreground mb-1">Clinical Case Review Queue</h2>
+              <p className="text-muted-foreground">AI-assisted case review for {specialty}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-foreground border-lurie-purple/30">
+                <span className="font-semibold text-lg">{SAMPLE_CASES.length}</span>
+                <span className="ml-1.5">cases pending</span>
+              </Badge>
+              <Badge variant="outline" className="text-muted-foreground">
+                <Clock className="h-3.5 w-3.5 mr-1.5" />
+                ~{totalEstimatedMinutes} min estimated
+              </Badge>
             </div>
           </div>
-        )}
 
-        {/* Normal Priority Cases */}
-        {normalPriorityCases.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              🟡 NORMAL PRIORITY
-              <Badge variant="secondary">{normalPriorityCases.length}</Badge>
-            </h2>
-            <div className="space-y-3">
-              {normalPriorityCases.map((c) => (
-                <Card key={c.id} className="border-l-4 border-l-yellow-500 hover:shadow-lg transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-lg text-gray-900">
-                            MRN: {c.mrn}
-                          </h3>
-                          <Badge variant="outline">{c.metricCode}</Badge>
-                          <span className="text-sm text-gray-600">{c.metricName}</span>
-                        </div>
-
-                        <div className="flex items-center gap-6 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            <span>{c.age}yo</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <FileText className="h-4 w-4" />
-                            <span>{c.domain}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span>Arrived: {formatTimeAgo(c.arrivedAt)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-4 w-4" />
-                            <span>Est. Time: {c.estimatedTime}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <Button
-                        onClick={() => startReview(c.id)}
-                        className="gap-2"
-                        variant="outline"
-                      >
-                        <Play className="h-4 w-4" />
-                        Start AI Review
-                      </Button>
+          {/* Completed Today - Compact Stats */}
+          <Card className="bg-gradient-to-r from-lurie-purple/5 via-lurie-sky/5 to-lurie-purple/5 border-lurie-purple/20">
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-lurie-purple/10 flex items-center justify-center">
+                      <TrendingUp className="h-4 w-4 text-lurie-purple" />
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Drafts Section */}
-        {SAMPLE_DRAFTS.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              📁 MY DRAFTS
-              <Badge variant="outline">{SAMPLE_DRAFTS.length}</Badge>
-            </h2>
-            <div className="space-y-3">
-              {SAMPLE_DRAFTS.map((draft) => (
-                <Card key={draft.id} className="border-l-4 border-l-blue-500">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-lg text-gray-900">
-                            MRN: {draft.mrn}
-                          </h3>
-                          <Badge variant="outline">{draft.metricCode}</Badge>
-                          <span className="text-sm text-gray-600">{draft.metricName}</span>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-0.5">Completed Today</p>
+                      <div className="flex items-baseline gap-4">
+                        <div>
+                          <span className="text-2xl font-bold text-lurie-purple">{stats.completed}</span>
+                          <span className="text-xs text-muted-foreground ml-1.5">cases</span>
                         </div>
-
-                        <div className="flex items-center gap-6 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span>Started: {formatTimeAgo(draft.startedAt)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-4 w-4" />
-                            <span>Progress: {draft.progress}%</span>
-                          </div>
+                        <div>
+                          <span className="text-2xl font-bold text-lurie-sky">{stats.minutes}</span>
+                          <span className="text-xs text-muted-foreground ml-1.5">total minutes</span>
                         </div>
-
-                        {/* Progress bar */}
-                        <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full transition-all"
-                            style={{ width: `${draft.progress}%` }}
-                          />
+                        <div>
+                          <span className="text-2xl font-bold text-lurie-teal">{stats.avgTime}</span>
+                          <span className="text-xs text-muted-foreground ml-1.5">avg min/case</span>
                         </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => resumeDraft(draft.id)}
-                          className="gap-2"
-                        >
-                          <Play className="h-4 w-4" />
-                          Resume
-                        </Button>
-                        <Button
-                          onClick={() => discardDraft(draft.id)}
-                          variant="ghost"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          Discard
-                        </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Completed Today Section */}
-        <Card className="bg-green-50 border-green-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-900">
-              <CheckCircle2 className="h-5 w-5" />
-              Completed Today
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-8">
-              <div>
-                <div className="text-3xl font-bold text-green-900">{COMPLETED_TODAY.count}</div>
-                <div className="text-sm text-green-700">cases completed</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-green-900">{COMPLETED_TODAY.totalMinutes}</div>
-                <div className="text-sm text-green-700">total minutes</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-green-900">{COMPLETED_TODAY.avgMinutes}</div>
-                <div className="text-sm text-green-700">avg min/case</div>
-              </div>
-              <div className="ml-auto">
-                <Button variant="outline" onClick={() => navigate('/completed')}>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" className="text-lurie-purple">
                   View History →
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Empty State */}
-        {filteredCases.length === 0 && (
-          <Card className="py-12">
-            <CardContent className="text-center">
-              <CheckCircle2 className="h-16 w-16 mx-auto text-green-600 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                All caught up!
-              </h3>
-              <p className="text-gray-600">
-                No pending cases in the queue. Great work!
-              </p>
-            </CardContent>
           </Card>
-        )}
-      </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-sm font-medium text-muted-foreground">Filter by:</span>
+          <Select value={domain} onValueChange={setDomain}>
+            <SelectTrigger className="w-[160px] bg-white">
+              <SelectValue placeholder="Domain" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Domains">All Domains</SelectItem>
+              <SelectItem value="Timeliness">Timeliness</SelectItem>
+              <SelectItem value="Safety">Safety</SelectItem>
+              <SelectItem value="Outcomes">Outcomes</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={priority} onValueChange={setPriority}>
+            <SelectTrigger className="w-[160px] bg-white">
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Priorities">All Priorities</SelectItem>
+              <SelectItem value="High">High Priority</SelectItem>
+              <SelectItem value="Normal">Normal Priority</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* High Priority Cases */}
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+            <h3 className="text-lg font-semibold text-foreground">HIGH PRIORITY</h3>
+            <Badge variant="destructive" className="ml-2">
+              {highPriorityCases.length}
+            </Badge>
+          </div>
+
+          <div className="space-y-4">
+            {highPriorityCases.map((c) => (
+              <Card
+                key={c.id}
+                className={`${c.borderColor} border-l-4 hover:shadow-lg transition-all duration-200 bg-white`}
+              >
+                <div className="p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h4 className="text-lg font-bold text-foreground">MRN: {c.mrn}</h4>
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {c.metricCode}
+                        </Badge>
+                        <Badge variant={c.badgeVariant as any} className={c.badgeClass}>
+                          {c.metricName}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <User className="h-4 w-4" />
+                          <span>{c.age}yo</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <FileText className="h-4 w-4" />
+                          <span>{c.domain}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-4 w-4" />
+                          <span>Arrived: {c.arrivedAt}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className={`h-4 w-4 ${c.timeIconClass}`} />
+                          <span className={`font-medium ${c.timeClass}`}>
+                            Est. Time: {c.estimatedTime}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => startReview(c.id)}
+                      className="bg-lurie-purple hover:bg-lurie-purple/90 text-white shadow-md"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start AI Review
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Normal Priority Cases */}
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            <h3 className="text-lg font-semibold text-foreground">NORMAL PRIORITY</h3>
+            <Badge variant="secondary" className="ml-2 bg-blue-50 text-blue-700">
+              {normalPriorityCases.length}
+            </Badge>
+          </div>
+
+          <div className="space-y-4">
+            {normalPriorityCases.map((c) => (
+              <Card
+                key={c.id}
+                className={`${c.borderColor} border-l-4 hover:shadow-lg transition-all duration-200 bg-white`}
+              >
+                <div className="p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h4 className="text-lg font-bold text-foreground">MRN: {c.mrn}</h4>
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {c.metricCode}
+                        </Badge>
+                        <Badge variant={c.badgeVariant as any} className={c.badgeClass}>
+                          {c.metricName}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <User className="h-4 w-4" />
+                          <span>{c.age}yo</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <FileText className="h-4 w-4" />
+                          <span>{c.domain}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-4 w-4" />
+                          <span>Arrived: {c.arrivedAt}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className={`h-4 w-4 ${c.timeIconClass}`} />
+                          <span className={`font-medium ${c.timeClass}`}>
+                            Est. Time: {c.estimatedTime}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => startReview(c.id)}
+                      variant="outline"
+                      className="border-lurie-purple text-lurie-purple hover:bg-lurie-purple/10 bg-transparent"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start AI Review
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* My Drafts */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-2 w-2 rounded-full bg-amber-500" />
+            <h3 className="text-lg font-semibold text-foreground">MY DRAFTS</h3>
+            <Badge variant="secondary" className="ml-2 bg-amber-50 text-amber-700">
+              1
+            </Badge>
+          </div>
+
+          <Card className="border-l-4 border-l-amber-500 bg-white hover:shadow-lg transition-all duration-200">
+            <div className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <h4 className="text-lg font-bold text-foreground">MRN: {SAMPLE_DRAFT.mrn}</h4>
+                    <Badge variant="outline" className="font-mono text-xs">
+                      {SAMPLE_DRAFT.metricCode}
+                    </Badge>
+                    <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200">
+                      {SAMPLE_DRAFT.metricName}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      <span>Started: {SAMPLE_DRAFT.startedAt}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="font-medium">Progress: {SAMPLE_DRAFT.progress}%</span>
+                    </div>
+                    <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-lurie-purple rounded-full"
+                        style={{ width: `${SAMPLE_DRAFT.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={() => startReview(SAMPLE_DRAFT.id)}
+                    className="bg-lurie-purple hover:bg-lurie-purple/90 text-white"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Resume
+                  </Button>
+                  <Button variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                    Discard
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </section>
+      </main>
     </div>
   );
 }

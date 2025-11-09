@@ -20,6 +20,9 @@ export default {
           blueLight: "#E6F4FB",   // very light for fills
           teal: "#40AAB0",        // accent (secondary)
           slate: "#334155",       // headings
+          purple: "#6366f1",      // primary purple for buttons/accents
+          sky: "#0ea5e9",         // sky blue for secondary accents
+          cream: "#fef3c7",       // cream for subtle backgrounds
         },
         background: "var(--background)",
         foreground: "var(--foreground)",
