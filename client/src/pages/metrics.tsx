@@ -5,6 +5,7 @@ import { DynamicFollowupForms } from '@/components/DynamicFollowupForms';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompleteMetric } from '@/hooks/useMetadataApi';
+import { formatMetricDisplay } from '@/lib/metricDisplay';
 
 /**
  * Metrics Demo Page
@@ -55,7 +56,8 @@ export default function MetricsPage() {
   const handleConfigure = () => {
     if (completeConfig) {
       console.log('Complete configuration:', completeConfig);
-      alert(`Metric configured: ${completeConfig.metric.metricName}\n\n` +
+      const metricDisplay = formatMetricDisplay(completeConfig.metric);
+      alert(`Metric configured: ${metricDisplay}\n\n` +
             `Signals: ${completeConfig.signalGroups.reduce((sum, g) => sum + g.signals.length, 0)}\n` +
             `Followups: ${completeConfig.followups.length}\n` +
             `Display Items: ${completeConfig.displayItems.length}\n` +
@@ -108,9 +110,9 @@ export default function MetricsPage() {
                   <div className="space-y-4">
                     <div>
                       <h3 className="font-medium text-sm text-muted-foreground mb-1">
-                        Metric Name
+                        Metric
                       </h3>
-                      <p className="text-base">{completeConfig.metric.metricName}</p>
+                      <p className="text-base">{formatMetricDisplay(completeConfig.metric)}</p>
                     </div>
 
                     <div>

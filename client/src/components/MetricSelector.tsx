@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Search, CheckCircle2, AlertCircle } from 'lucide-react';
+import { formatMetricDisplay, formatMetricSubtitle } from '@/lib/metricDisplay';
 
 export interface MetricSelectorProps {
   onMetricSelect?: (metricId: string, config: any) => void;
@@ -70,7 +71,9 @@ export function MetricSelector({
         (m) =>
           m.metricName.toLowerCase().includes(query) ||
           m.metricId.toLowerCase().includes(query) ||
-          m.specialty.toLowerCase().includes(query)
+          m.specialty.toLowerCase().includes(query) ||
+          m.questionCode?.toLowerCase().includes(query) ||
+          m.domain?.toLowerCase().includes(query)
       );
     }
 
@@ -243,6 +246,9 @@ interface MetricCardProps {
 }
 
 function MetricCard({ metric, isSelected, onClick }: MetricCardProps) {
+  const displayName = formatMetricDisplay(metric);
+  const subtitle = formatMetricSubtitle(metric);
+
   return (
     <button
       onClick={onClick}
@@ -255,26 +261,28 @@ function MetricCard({ metric, isSelected, onClick }: MetricCardProps) {
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium">{metric.metricName}</h4>
+            <h4 className="font-medium">{displayName}</h4>
             {isSelected && (
               <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
             )}
           </div>
-          <p className="text-xs text-muted-foreground mb-2">{metric.metricId}</p>
+          {subtitle && (
+            <p className="text-xs text-muted-foreground mb-2">{subtitle}</p>
+          )}
           <div className="flex gap-2 flex-wrap">
-            {metric.domain && (
+            {metric.specialtyId && (
               <Badge variant="secondary" className="text-xs">
-                {metric.domain}
+                {metric.specialtyId}
               </Badge>
             )}
-            {metric.thresholdHours && (
+            {metric.priority && (
               <Badge variant="outline" className="text-xs">
-                ≤{metric.thresholdHours}h
+                Priority {metric.priority}
               </Badge>
             )}
-            {metric.contentVersion && (
-              <Badge variant="outline" className="text-xs">
-                v{metric.contentVersion}
+            {metric.active === false && (
+              <Badge variant="destructive" className="text-xs">
+                Inactive
               </Badge>
             )}
           </div>

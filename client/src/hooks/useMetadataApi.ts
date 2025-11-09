@@ -7,9 +7,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 export interface Metric {
   metricId: string;
   specialty: string;
+  specialtyId?: string | null;        // "ORTHO", "CARDIOLOGY" - from Excel
+  questionCode?: string | null;       // "I25", "E24", "I32a" - USNWR question identifier
   metricName: string;
   domain: string | null;
+  priority?: number | null;           // Priority order
   thresholdHours: string | null;
+  definitionWindow?: string | null;   // "start_time -> end_time"
+  active?: boolean | null;            // Whether metric is active
+  version?: string | null;            // "0.0.1"
   contentVersion: string | null;
 }
 
