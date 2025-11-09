@@ -12,10 +12,17 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { promptStore } from "./promptStore";
 import { validateRequest, logPromptUsage } from "../shared/promptRouting";
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client (optional for demo mode)
+let openai: OpenAI | null = null;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  console.log('✅ OpenAI client initialized');
+} else {
+  console.log('⚠️  Running without OpenAI (AI features disabled)');
+  console.log('   Set OPENAI_API_KEY environment variable to enable AI features');
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -215,10 +222,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Signal Processing endpoint
   app.post("/api/ai_signals", isAuthenticated, asyncHandler(async (req, res) => {
     const { specialty, moduleId, moduleSignals, patient, promptText } = req.body;
-    
-    
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ 
+
+
+    if (!openai) {
+      return res.status(500).json({
         message: "OpenAI API key not configured",
         signals: [],
         category_counts: { pass: 0, fail: 0, caution: 0, inactive: 0 }
@@ -250,7 +257,7 @@ ${JSON.stringify(patient, null, 2)}
 Signals to evaluate:
 ${moduleSignals.map((s: any) => `- ${s.id}: ${s.label} (group: ${s.group})`).join('\n')}`;
 
-      const completion = await openai.chat.completions.create({
+      const completion = await openai!.chat.completions.create({
         model: "gpt-4o",
         messages: [
           { role: "system", content: systemPrompt },
@@ -356,7 +363,11 @@ ${moduleSignals.map((s: any) => `- ${s.id}: ${s.label} (group: ${s.group})`).joi
   app.post("/api/abstraction/run", isAuthenticated, async (req, res) => {
     try {
       const testCase = testCaseSchema.parse(req.body);
-      
+
+      if (!openai) {
+        return res.status(500).json({ message: 'OpenAI API key not configured' });
+      }
+
       // Use prompt routing system for abstraction
       const requestEnvelope = promptStore.buildRequest(
         testCase.specialty || 'Orthopedics',
@@ -371,11 +382,11 @@ ${moduleSignals.map((s: any) => `- ${s.id}: ${s.label} (group: ${s.group})`).joi
 
       const promptConfig = promptStore.getPrompt(
         testCase.specialty || 'Orthopedics',
-        testCase.module || 'default', 
+        testCase.module || 'default',
         'abstraction_help'
       );
 
-      const completion = await openai.chat.completions.create({
+      const completion = await openai!.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
@@ -658,11 +669,15 @@ ${moduleSignals.map((s: any) => `- ${s.id}: ${s.label} (group: ${s.group})`).joi
   app.post("/api/qa", asyncHandler(async (req, res) => {
     try {
       const { question_text, patient_payload, active_question_id, signals } = req.body;
-      
+
       if (!question_text || !patient_payload || !active_question_id) {
-        return res.status(400).json({ 
-          message: "Missing required fields: question_text, patient_payload, active_question_id" 
+        return res.status(400).json({
+          message: "Missing required fields: question_text, patient_payload, active_question_id"
         });
+      }
+
+      if (!openai) {
+        return res.status(500).json({ message: 'OpenAI API key not configured' });
       }
 
       // Load prompt template
@@ -695,7 +710,7 @@ Instructions:
 - Focus on the specific medical quality measure being asked about`;
 
       // Call OpenAI API
-      const completion = await openai.chat.completions.create({
+      const completion = await openai!.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
@@ -734,26 +749,24 @@ Instructions:
   // New structured QA endpoint with 3-field schema enforcement
   app.post("/api/qa", isAuthenticated, asyncHandler(async (req, res) => {
     try {
-      const { 
-        prompt_text, 
-        specialty, 
-        module_id, 
-        followup_question, 
-        patient_payload, 
-        signal_ids 
+      const {
+        prompt_text,
+        specialty,
+        module_id,
+        followup_question,
+        patient_payload,
+        signal_ids
       } = req.body;
 
       if (!prompt_text || !specialty || !module_id) {
-        return res.status(400).json({ 
-          error: 'prompt_text, specialty, and module_id are required' 
+        return res.status(400).json({
+          error: 'prompt_text, specialty, and module_id are required'
         });
       }
 
-      // Import OpenAI here to avoid loading it if not needed
-      const OpenAI = await import('openai');
-      const openai = new OpenAI.default({
-        apiKey: process.env.OPENAI_API_KEY
-      });
+      if (!openai) {
+        return res.status(500).json({ error: 'OpenAI API key not configured' });
+      }
 
       // System wrapper to enforce 3-field schema
       const SYSTEM_WRAPPER = `You must answer in exactly 3 fields only:
@@ -768,7 +781,7 @@ No extra lines or explanations outside these 3 fields.`;
       if (patient_payload) {
         const followupContext = followup_question ? `\n\nFollow-up Question: ${followup_question}` : '';
         const signalContext = signal_ids?.length ? `\n\nFocus on signals: ${signal_ids.join(', ')}` : '';
-        
+
         const context = `
 Specialty: ${specialty}
 Module: ${module_id}
@@ -782,7 +795,7 @@ ${prompt_text}
         contextPrompt = context;
       }
 
-      const completion = await openai.chat.completions.create({
+      const completion = await openai!.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
@@ -816,7 +829,7 @@ Evidence: [list items with timestamps/sources]
 
 Original context: ${contextPrompt.substring(0, 500)}...`;
 
-        const repairCompletion = await openai.chat.completions.create({
+        const repairCompletion = await openai!.chat.completions.create({
           model: "gpt-4o",
           messages: [
             {
@@ -863,20 +876,18 @@ Original context: ${contextPrompt.substring(0, 500)}...`;
         return res.status(400).json({ error: 'Query is required' });
       }
 
-      // Import OpenAI here to avoid loading it if not needed
-      const OpenAI = await import('openai');
-      const openai = new OpenAI.default({
-        apiKey: process.env.OPENAI_API_KEY
-      });
+      if (!openai) {
+        return res.status(500).json({ error: 'OpenAI API key not configured' });
+      }
 
       // Build context for the LLM
       let context = `You are a medical data abstraction assistant helping with healthcare quality review.`;
-      
+
       if (patient_id && question_id) {
         context += `\n\nCurrent Context:
 - Patient: ${patient_id}
 - Question: ${question_id}`;
-        
+
         if (patient_data) {
           context += `\n- Patient Data: ${JSON.stringify(patient_data, null, 2)}`;
         }
@@ -893,7 +904,7 @@ Please provide a helpful, accurate response about the medical data or abstractio
 Keep responses concise but informative.`;
 
       // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      const completion = await openai.chat.completions.create({
+      const completion = await openai!.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
