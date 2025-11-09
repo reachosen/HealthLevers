@@ -17,15 +17,12 @@ import {
   CheckCircle2,
   Target
 } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <Navbar />
-
       <div className="container mx-auto px-6 py-12 max-w-7xl">
         {/* Diagnostic Banner */}
         <div className="bg-green-500 text-white p-4 rounded-lg mb-8 text-center font-bold text-xl">

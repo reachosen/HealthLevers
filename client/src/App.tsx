@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
 import Landing from "@/pages/Landing";
 import NotFound from "@/pages/not-found";
-import NavbarToggle from "@/components/NavbarToggle";
+import Navbar from "@/components/Navbar";
 import PromptStorePage from "@/pages/promptstore";
 import ReviewWorkbench from "@/pages/review-workbench";
 
@@ -40,8 +40,8 @@ function Router() {
   return (
     <>
       {/* Single shared Navbar for authenticated users */}
-      <NavbarToggle />
-      
+      <Navbar />
+
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/review-workbench" component={ReviewWorkbench} />
