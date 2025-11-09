@@ -124,11 +124,8 @@ router.get('/metrics', async (req, res) => {
       });
 
     const response = {
-      specialties: sortedGrouped,
-      summary: {
-        totalMetrics: metrics.length,
-        totalSpecialties: Object.keys(grouped).length,
-      },
+      metrics: sortedGrouped,
+      totalCount: metrics.length,
     };
 
     setCache(cacheKey, response);
