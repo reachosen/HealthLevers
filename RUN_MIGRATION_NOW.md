@@ -52,37 +52,31 @@ git checkout claude/review-schema-design-011CUrfdr6Zov54M8h9xub7U
 git pull origin claude/review-schema-design-011CUrfdr6Zov54M8h9xub7U
 ```
 
-**Verify .env file exists:**
+**Create .env file from template:**
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Windows (PowerShell)
+Copy-Item .env.example .env
+
+# Then edit .env and update with your actual database credentials
+```
+
+**Verify .env file exists and is configured:**
 ```bash
 cat .env
 ```
 
-Should show:
+Should show (with YOUR actual credentials):
 ```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/healthlevers
+DATABASE_URL=postgresql://YOUR_USER:YOUR_PASSWORD@localhost:5432/healthlevers
 PORT=5000
 HOST=localhost
 NODE_ENV=development
 ```
 
-**If .env is missing or wrong, create/update it:**
-```bash
-# Windows (PowerShell)
-@"
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/healthlevers
-PORT=5000
-HOST=localhost
-NODE_ENV=development
-"@ | Out-File -FilePath .env -Encoding UTF8
-
-# Linux/Mac
-cat > .env << EOF
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/healthlevers
-PORT=5000
-HOST=localhost
-NODE_ENV=development
-EOF
-```
+**Note**: `.env` is in `.gitignore` and will NOT be committed to git. This keeps your credentials safe!
 
 ---
 
