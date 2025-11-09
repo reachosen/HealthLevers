@@ -20,7 +20,6 @@ import {
   ArrowLeft,
   FileJson
 } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import ClinicalSummaryCard from '@/components/ClinicalSummaryCard';
 import ReasoningQuestionsPanel from '@/components/ReasoningQuestionsPanel';
 import CollapsibleGroup from '@/components/ui/CollapsibleGroup';
@@ -131,8 +130,6 @@ export default function ReviewWorkbench() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
       <div className="container mx-auto p-6 max-w-7xl">
         {/* Header */}
         <div className="mb-6">
