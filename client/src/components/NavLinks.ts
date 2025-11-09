@@ -5,8 +5,10 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: NavLink[] = [
-  { href: "/", label: "Abstraction Helper" },
-  { href: "/intake", label: "AI Signal Intake" },
+  { href: "/", label: "Dashboard" },
+  { href: "/review-workbench", label: "🤖 AI Review" },
+  { href: "/cases", label: "Case List" },
+  { href: "/intake", label: "Manual Intake" },
   { href: "/promptstore", label: "PromptStore" },
-  { href: "/case-view", label: "Case View Setup" },
+  { href: "/case-view", label: "Settings" },
 ];

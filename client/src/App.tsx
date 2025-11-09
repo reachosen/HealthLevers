@@ -8,6 +8,7 @@ import { PromptPlayProvider, PromptPlayDrawer } from "@/components/PromptPlay";
 
 import { useAuth } from "@/hooks/useAuth";
 import Home from "@/pages/home";
+import Dashboard from "@/pages/dashboard";
 import IntakePage from "@/pages/intake";
 import Landing from "@/pages/Landing";
 import NotFound from "@/pages/not-found";
@@ -50,19 +51,20 @@ function Router() {
       <NavbarToggle />
       
       <Switch>
+        <Route path="/" component={() => <Dashboard />} />
+        <Route path="/review-workbench" component={() => <ReviewWorkbench />} />
         <Route path="/intake" component={() => <IntakePage
           selectedSpecialty={selectedSpecialty}
           onSpecialtyChange={setSelectedSpecialty}
           availableSpecialties={availableSpecialties}
         />} />
-        <Route path="/review-workbench" component={() => <ReviewWorkbench />} />
-        <Route path="/promptstore" component={() => <PromptStorePage />} />
-        <Route path="/setup" component={() => <SetupPage />} />
-        <Route path="/" component={() => <Home
+        <Route path="/cases" component={() => <Home
           selectedSpecialty={selectedSpecialty}
           onSpecialtyChange={setSelectedSpecialty}
           availableSpecialties={availableSpecialties}
         />} />
+        <Route path="/promptstore" component={() => <PromptStorePage />} />
+        <Route path="/setup" component={() => <SetupPage />} />
         <Route component={NotFound} />
       </Switch>
       
