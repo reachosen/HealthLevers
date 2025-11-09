@@ -1,140 +1,101 @@
 import React from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
-import { NAV_LINKS } from './NavLinks';
-import { DemoResetButton } from './DemoResetButton';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FileText } from 'lucide-react';
 
 interface NavbarProps {
   selectedSpecialty?: string;
   onSpecialtyChange?: (specialty: string) => void;
   availableSpecialties?: string[];
-  onTogglePromptStore?: () => void;
-  onTogglePlanningConfig?: () => void;
 }
 
 export default function Navbar({
   selectedSpecialty = "Orthopedics",
   onSpecialtyChange,
-  availableSpecialties = ["Orthopedics"],
-  onTogglePromptStore,
-  onTogglePlanningConfig
+  availableSpecialties = ["Orthopedics", "Cardiology", "Neurology"]
 }: NavbarProps) {
   const { user } = useAuth();
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
 
-  const isActive = (path: string) => location === path;
+  const getUserName = () => {
+    if (!user) return 'User';
+    const firstName = (user as any)?.firstName;
+    const lastName = (user as any)?.lastName;
+    if (firstName && lastName) return `${firstName} ${lastName}`;
+    if (firstName) return firstName;
+    return 'Local Developer';
+  };
 
   return (
-    <header className="w-full border-b bg-white/70 backdrop-blur">
-      <div className="mx-auto max-w-7xl px-4 py-3 flex items-center gap-6">
-        <a href="/" className="font-extrabold text-lg text-lurie-blue">
-          USNWR Abstraction Helper
-        </a>
+    <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-border/40 shadow-sm">
+      <div className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            {/* Lurie Logo */}
+            <a href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+              <div className="h-12 w-12 rounded-xl bg-lurie-purple flex items-center justify-center shadow-md">
+                <svg viewBox="0 0 24 24" className="h-7 w-7 text-white" fill="currentColor">
+                  <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+                  <path d="M10 17l-3-3 1.41-1.41L10 14.17l5.59-5.58L17 10l-7 7z" fill="white" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">Lurie Children's</h1>
+                <p className="text-sm text-muted-foreground">Clinical Case Review Helper</p>
+              </div>
+            </a>
 
-        <nav className="flex items-center gap-2 flex-wrap overflow-x-auto whitespace-nowrap snap-x">
-          {NAV_LINKS.map(link => {
-            // Handle special cases for buttons that aren't real pages
-            if (link.href === "/promptstore") {
-              return (
-                <button
-                  key={link.href}
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('PromptStore button clicked - handlers available:', !!onTogglePromptStore);
-                    if (onTogglePromptStore) {
-                      console.log('Calling onTogglePromptStore...');
-                      onTogglePromptStore();
-                    } else {
-                      console.log('No onTogglePromptStore handler provided');
-                    }
-                  }}
-                  className="px-3 py-1.5 rounded-md border transition text-sm bg-white hover:bg-gray-50 border-gray-200 shrink-0 whitespace-nowrap cursor-pointer"
-                >
-                  {link.label}
-                </button>
-              );
-            }
-            if (link.href === "/case-view") {
-              return (
-                <button
-                  key={link.href}
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Case View Setup button clicked - handlers available:', !!onTogglePlanningConfig);
-                    if (onTogglePlanningConfig) {
-                      console.log('Calling onTogglePlanningConfig...');
-                      onTogglePlanningConfig();
-                    } else {
-                      console.log('No onTogglePlanningConfig handler provided');
-                    }
-                  }}
-                  className="px-3 py-1.5 rounded-md border transition text-sm bg-white hover:bg-gray-50 border-gray-200 shrink-0 whitespace-nowrap cursor-pointer"
-                >
-                  {link.label}
-                </button>
-              );
-            }
-            
-            // Regular navigation links
-            return (
-              <a
-                key={link.href}
-                href={link.href}
-                className={`px-3 py-1.5 rounded-md border transition text-sm shrink-0 whitespace-nowrap ${
-                  isActive(link.href) 
-                    ? "bg-sky-100 border-sky-300 text-sky-800" 
-                    : "bg-white hover:bg-gray-50 border-gray-200"
-                }`}
+            <nav className="hidden md:flex items-center gap-1 ml-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={location === '/' ? 'text-lurie-purple font-medium' : ''}
+                onClick={() => navigate('/')}
               >
-                {link.label}
-              </a>
-            );
-          })}
-        </nav>
+                <FileText className="h-4 w-4 mr-2" />
+                Queue
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={location === '/metrics' ? 'text-lurie-purple font-medium' : ''}
+                onClick={() => navigate('/metrics')}
+              >
+                Metrics
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={location === '/promptstore' ? 'text-lurie-purple font-medium' : ''}
+                onClick={() => navigate('/promptstore')}
+              >
+                Config
+              </Button>
+            </nav>
+          </div>
 
-        <div className="ml-auto flex items-center gap-3">
-          {/* User Welcome */}
-          {user && (
-            <span className="text-sm text-gray-600">
-              Welcome {(() => {
-                const firstName = (user as any)?.firstName;
-                const lastName = (user as any)?.lastName;
-                const email = (user as any)?.email;
-                
-                if (firstName && lastName) {
-                  return `${firstName} ${lastName}`;
-                } else if (firstName) {
-                  return firstName;
-                } else if (email) {
-                  return email.split('@')[0];
-                } else {
-                  return 'User';
-                }
-              })() as string}
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground hidden md:inline">
+              Welcome {getUserName()}
             </span>
-          )}
-          
-          <DemoResetButton />
-          
-          <label className="text-sm text-gray-600">Specialty:</label>
-          <select 
-            className="rounded-md border px-2 py-1 text-sm"
-            value={selectedSpecialty}
-            onChange={(e) => onSpecialtyChange?.(e.target.value)}
-          >
-            {availableSpecialties.map((specialty) => (
-              <option key={specialty} value={specialty}>
-                {specialty}
-              </option>
-            ))}
-          </select>
-          <a href="/api/logout" className="text-sm text-gray-600 hover:text-gray-900">
-            Sign Out
-          </a>
+            <Select value={selectedSpecialty} onValueChange={onSpecialtyChange}>
+              <SelectTrigger className="w-[180px] bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableSpecialties.map((specialty) => (
+                  <SelectItem key={specialty} value={specialty}>
+                    {specialty}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={() => navigate('/api/logout')}>
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
     </header>
