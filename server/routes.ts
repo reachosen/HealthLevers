@@ -33,22 +33,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
 
-      // In demo mode without database, return user from session claims
-      if (!process.env.DATABASE_URL) {
-        return res.json({
-          id: userId,
-          email: req.user.claims.email || 'dev@localhost',
-          firstName: req.user.claims.first_name || 'Local',
-          lastName: req.user.claims.last_name || 'Developer',
-          profileImageUrl: req.user.claims.profile_image_url || ''
-        });
+      // Try to fetch from database if DATABASE_URL is set
+      if (process.env.DATABASE_URL) {
+        try {
+          const user = await storage.getUser(userId);
+          return res.json(user);
+        } catch (dbError) {
+          console.warn("Database not available, falling back to session claims");
+          // Fall through to return session claims below
+        }
       }
 
-      // With database, fetch from storage
-      const user = await storage.getUser(userId);
-      res.json(user);
+      // Fallback: Return user from session claims (demo mode or database unavailable)
+      return res.json({
+        id: userId,
+        email: req.user.claims.email || 'dev@localhost',
+        firstName: req.user.claims.first_name || 'Local',
+        lastName: req.user.claims.last_name || 'Developer',
+        profileImageUrl: req.user.claims.profile_image_url || ''
+      });
     } catch (error) {
-      console.error("Error fetching user:", error);
+      console.error("Error in /api/auth/user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
