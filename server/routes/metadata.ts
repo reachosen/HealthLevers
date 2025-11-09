@@ -577,4 +577,21 @@ router.get('/cache/stats', async (req, res) => {
   }
 });
 
+// GET /api/metadata/debug/raw-metrics
+// DEBUG: Get raw metrics directly from database (bypasses cache)
+router.get('/debug/raw-metrics', async (req, res) => {
+  try {
+    const metrics = await db.select().from(metric).limit(5);
+    res.json({
+      count: metrics.length,
+      sample: metrics,
+      keys: metrics.length > 0 ? Object.keys(metrics[0]) : [],
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error fetching raw metrics:', error);
+    res.status(500).json({ error: 'Failed to fetch raw metrics' });
+  }
+});
+
 export default router;
