@@ -117,7 +117,7 @@ export default function CaseQueue() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-1">Clinical Case Review Queue</h2>
-              <p className="text-muted-foreground">AI-assisted case review for {specialty}</p>
+              <p className="text-muted-foreground">AI-assisted case review workflow</p>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-foreground border-lurie-purple/30">
